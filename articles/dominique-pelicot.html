@@ -352,6 +352,91 @@
             .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
             .menu-toggle.active .bar:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
         }
+        /* --- Interactive Timeline Styles --- */
+.timeline-container {
+    position: relative;
+    padding: 2rem 0;
+    margin: 2rem 0;
+    border-left: 2px solid #333; /* The vertical line */
+    margin-left: 1rem; /* Spacing from left edge */
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 2.5rem; /* Space for the dot and line */
+    margin-bottom: 3rem;
+    opacity: 0; /* Hidden initially */
+    transform: translateX(-20px); /* Slide effect start pos */
+    transition: all 0.6s var(--ease-out);
+}
+
+/* The Dot on the Timeline */
+.timeline-dot {
+    position: absolute;
+    left: -9px; /* Centers it on the 2px border line */
+    top: 0;
+    width: 16px;
+    height: 16px;
+    background-color: var(--color-black);
+    border: 2px solid var(--color-red);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(205, 32, 31, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+/* Active State (When scrolled into view) */
+.timeline-item.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.timeline-item:hover .timeline-dot {
+    background-color: var(--color-red);
+    box-shadow: 0 0 15px var(--color-red);
+    transform: scale(1.2);
+}
+
+/* The Event Card Content */
+.timeline-content {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid #333;
+    padding: 1.5rem;
+    border-radius: 4px;
+    position: relative;
+}
+
+.timeline-content::before {
+    /* Little arrow pointing to the line */
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 6px;
+    width: 15px;
+    height: 15px;
+    background: #111; /* Matches card bg */
+    border-left: 1px solid #333;
+    border-bottom: 1px solid #333;
+    transform: rotate(45deg);
+}
+
+.timeline-date {
+    font-family: var(--font-mono);
+    color: var(--color-red);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: bold;
+}
+
+.timeline-title {
+    font-family: var(--font-heading);
+    color: #fff;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
     </style>
 </head>
 <body>
@@ -468,11 +553,45 @@
 
                     <h2 id="chronology">III. A Decade of Drugged Abuse: Chronology</h2>
                     <p>The period of abuse documented by Pelicot's archive spanned nearly a decade, from July 2011 to October 2020.</p>
-                    <ul>
-                        <li><strong>July 23, 2011:</strong> The first documented rape involving an accomplice occurred at the Pelicots' home at the time in Villiers-sur-Marne, near Paris.</li>
-                        <li><strong>2011-2020:</strong> The abuse was not confined to one location. It took place in their primary residence in Mazan, but also in Villiers-sur-Marne, Saint-Rémy-lès-Chevreuse, and on the Île de Ré. One of the most chilling locations identified was the couple's daughter's beach house.</li>
-                        <li><strong>October 22, 2020:</strong> The last recorded act of abuse occurred. This final rape took place after Dominique Pelicot's September 12 upskirting arrest but before the November 2 discovery of the files, indicating his deep-seated compulsion.</li>
-                    </ul>
+                    <div class="timeline-container">
+    
+    <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+            <span class="timeline-date">JULY 23, 2011</span>
+            <h4 class="timeline-title">The First Violation</h4>
+            <p>The first documented rape involving an accomplice occurred at the Pelicots' home in Villiers-sur-Marne. This marks the known beginning of the systematic recruitment strategy.</p>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+            <span class="timeline-date">2011 - 2020</span>
+            <h4 class="timeline-title">A Decade of Shadows</h4>
+            <p>The abuse spanned three different residences (Mazan, Villiers-sur-Marne, Île de Ré) and even their daughter's beach house. Gisèle experienced this era as a "fog of unexplained fatigue."</p>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+            <span class="timeline-date">SEPTEMBER 12, 2020</span>
+            <h4 class="timeline-title">The Supermarket Arrest</h4>
+            <p>Dominique Pelicot is caught filming up skirts in a Carpentras supermarket. Police seize his devices on a "hunch," unlocking the digital archive.</p>
+        </div>
+    </div>
+
+    <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+            <span class="timeline-date">OCTOBER 22, 2020</span>
+            <h4 class="timeline-title">The Final Act</h4>
+            <p>Despite his arrest weeks prior, the compulsion continued. The last recorded abuse occurred just days before police uncovered the full extent of the "library of images."</p>
+        </div>
+    </div>
+
+</div>
                     <p>
                         For Gisèle, this decade was experienced as a fog of unexplained fatigue. She had no conscious memory of the acts. "I would wake up with my pyjamas on," she testified, explaining her husband would dress her after the assaults. "The mornings I must have been more tired than usual, but I walk a lot and thought it was that".
                     </p>
@@ -642,6 +761,29 @@
                 menuToggle.classList.toggle('active'); navLinks.classList.toggle('active');
             });
         });
+        // ... existing mobile menu code ...
+
+    // --- Interactive Timeline Observer ---
+    const timelineItems = document.querySelectorAll('.timeline-item');
+
+    const timelineObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Add the 'active' class to trigger CSS transition
+                entry.target.classList.add('active');
+                // Stop observing once it's revealed (optional, keeps it visible)
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        root: null,
+        threshold: 0.2, // Trigger when 20% of the item is visible
+        rootMargin: "0px 0px -50px 0px" // Slightly offset so it triggers before bottom
+    });
+
+    timelineItems.forEach(item => {
+        timelineObserver.observe(item);
+    });
     </script>
 </body>
 </html>
