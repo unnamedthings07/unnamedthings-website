@@ -437,6 +437,24 @@
     margin-bottom: 0.5rem;
     text-transform: uppercase;
 }
+/* --- Reading Progress Bar --- */
+.progress-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px; /* Thin line */
+    background: transparent;
+    z-index: 1001;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--color-red);
+    width: 0%; /* Starts at 0 */
+    transition: width 0.1s linear; /* Smooth movement */
+    box-shadow: 0 0 10px var(--color-red), 0 0 20px var(--color-red); /* Neon Glow */
+}
     </style>
 </head>
 <body>
@@ -456,10 +474,14 @@
             <span class="bar"></span><span class="bar"></span><span class="bar"></span>
         </button>
         <ul class="nav-links">
-            <li><a href="https://www.unnamedthings07.qzz.io/videos/video-page" class="nav-link"><span>V</span>ideos</a></li>
-            <li><a href="https://www.unnamedthings07.qzz.io/articles/articles-page" class="nav-link active"><span>A</span>rticles</a></li>
-            <li><a href="https://www.unnamedthings07.qzz.io/contact" class="nav-link"><span>C</span>onnect</a></li>
-        </ul>
+        <li><a href="https://www.unnamedthings07.qzz.io/videos/video-page" class="nav-link"><span>V</span>ideos</a></li>
+        <li><a href="https://www.unnamedthings07.qzz.io/articles/articles-page" class="nav-link active"><span>A</span>rticles</a></li>
+        <li><a href="https://www.unnamedthings07.qzz.io/contact" class="nav-link"><span>C</span>onnect</a></li>
+    </ul>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="readingProgress"></div>
+    </div>
     </nav>
 
     <!-- Main Content -->
@@ -783,6 +805,24 @@
 
     timelineItems.forEach(item => {
         timelineObserver.observe(item);
+    });
+    // ... existing Mobile Menu & Timeline Code ...
+
+    // --- Reading Progress Bar Logic ---
+    const progressBar = document.getElementById('readingProgress');
+
+    window.addEventListener('scroll', () => {
+        // 1. Calculate how far down the user has scrolled
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        
+        // 2. Calculate the total scrollable height (Total height - Viewport height)
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        
+        // 3. Create a percentage (0 to 100)
+        const scrollPercentage = (scrollTop / scrollHeight) * 100;
+        
+        // 4. Set the width
+        progressBar.style.width = scrollPercentage + "%";
     });
     </script>
 </body>
