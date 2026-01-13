@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy Jekyll Site to GitHub Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -14,17 +14,14 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # Build job
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,12 +30,26 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Build with Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: ./_site  # Only upload the finished website, not the raw source
 
+  # Deploy job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10 # Safety limit to prevent getting stuck
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
