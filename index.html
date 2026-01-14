@@ -728,6 +728,70 @@
                 width: 100%;
                 text-align: center;
             }
+
+            .warning-border {
+                padding: 1.5rem 1rem; /* Reduced from 3rem 2rem */
+                margin: 0 10px; /* Ensure it doesn't touch screen edges */
+                background: rgba(10, 5, 5, 0.85); /* Slightly more opaque for readability */
+            }
+            .warning-label {
+                font-size: 0.7rem;
+                margin-bottom: 10px;
+            }
+            .hero-desc {
+                font-size: 0.95rem;
+                line-height: 1.4;
+                margin-top: 1rem;
+            }
+            .hero-sub {
+                margin-top: 1.5rem;
+                font-size: 0.8rem;
+            }
+
+            /* --- OPTIMIZATION 2: Better Cards for Touch --- */
+            .card {
+                /* Remove hover dependency for mobile */
+                transform: none !important; 
+            }
+            /* Always show the red accent line on mobile so it looks "active" */
+            .card::before {
+                transform: scaleX(1); 
+                opacity: 0.7;
+            }
+            .card-content {
+                padding: 1.5rem 1rem; /* Save space */
+            }
+            
+            /* --- OPTIMIZATION 3: File Folder Layout --- */
+            .file-img-col {
+                min-height: 250px; /* Reduced height to see content sooner */
+            }
+            .file-stamp {
+                /* Make the stamp smaller and less intrusive */
+                font-size: 0.9rem;
+                padding: 5px 12px;
+                top: 10px;
+                right: 10px;
+                border-width: 2px;
+            }
+            .file-content-col {
+                /* Darker background for better text contrast on mobile */
+                background: #0a0a0a; 
+                padding: 2rem 1.5rem;
+            }
+
+            /* --- OPTIMIZATION 4: Tighten Spacing --- */
+            .section-padding {
+                padding: 40px 0; /* Reduced from 60px */
+            }
+            .quote-divider {
+                padding: 60px 0;
+            }
+            
+            /* Hide the "Scroll Down" arrow on short screens to avoid overlap */
+            @media (max-height: 700px) {
+                .scroll-indicator { display: none; }
+            }
             
             /* Burger Animation Fixes */
             .menu-toggle.active .bar:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
