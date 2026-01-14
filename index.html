@@ -328,11 +328,15 @@
         .nav-link:hover::after { width: 100%; }
 
         /* Mobile Nav Toggle */
-        .menu-toggle { display: none; cursor: pointer; background: none; border: none; z-index: 1002; }
+        .menu-toggle { display: none; cursor: pointer; background: none; border: none; z-index: 1002; padding: 10px;}
         .bar {
-            width: 25px; height: 2px; background: var(--color-red);
-            margin: 6px 0; transition: 0.4s;
-        }
+    display: block; /* <--- ADD THIS LINE */
+    width: 25px; 
+    height: 3px; /* Made slightly thicker for better visibility */
+    background-color: var(--color-red);
+    margin: 5px auto; /* Centering */
+    transition: 0.4s;
+}
 
         /* --- 5. Hero Section --- */
         .hero {
