@@ -330,13 +330,13 @@
         /* Mobile Nav Toggle */
         .menu-toggle { display: none; cursor: pointer; background: none; border: none; z-index: 1002; padding: 10px;}
         .bar {
-    display: block; /* <--- ADD THIS LINE */
-    width: 25px; 
-    height: 3px; /* Made slightly thicker for better visibility */
-    background-color: var(--color-red);
-    margin: 5px auto; /* Centering */
-    transition: 0.4s;
-}
+            display: block; /* <--- CRITICAL FIX */
+            width: 25px; 
+            height: 3px; /* Slightly thicker */
+            background: var(--color-red);
+            margin: 6px auto; /* Centers them */
+            transition: 0.4s;
+        }
 
         /* --- 5. Hero Section --- */
         .hero {
@@ -692,47 +692,44 @@
             /* Card Grid */
             .grid-columns { grid-template-columns: 1fr; gap: 1.5rem; }
             
-            /* Mobile Menu */
-            .menu-toggle { display: block; }
-            /* Inside @media (max-width: 768px) { ... } */
-
-    /* 1. Improved Mobile Menu styling */
-    .nav-links {
-        position: fixed;
-        top: 0; right: -100%;
-        width: 85%; /* Wider for better reach */
-        height: 100dvh; /* Dynamic viewport height */
-        background: rgba(5, 5, 5, 0.98); /* Solid background */
-        backdrop-filter: blur(20px);
-        flex-direction: column;
-        justify-content: flex-start; /* Start from top */
-        padding-top: 120px; /* Clearance for notch/header */
-        align-items: center;
-        gap: 2rem;
-        transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-        border-left: 1px solid #222;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.8);
-    }
-
-    /* 2. Bigger Touch Targets */
-    .nav-link { 
-        font-size: 2rem; 
-        padding: 15px 0; 
-        width: 100%;
-        text-align: center;
-    }
-
-    /* 3. Hide decorative borders on mobile to prevent overflow */
-    .viewfinder-border {
-        display: none;
-    }
-    
-    /* 4. Allow cards to size naturally */
-    .card {
-        min-height: auto;
-    }
+            /* --- FIXED MOBILE MENU --- */
+            .menu-toggle { 
+                display: block; 
+                padding: 10px; /* Makes it easier to tap */
+            }
             
-            /* Burger Animation */
+            .nav-links {
+                position: fixed;
+                top: 0; 
+                right: -100%; /* Hidden off-screen */
+                width: 80%;
+                height: 100dvh;
+                background: rgba(5, 5, 5, 0.98); /* Solid dark background */
+                backdrop-filter: blur(15px);
+                display: flex; /* Ensure flex layout is active */
+                flex-direction: column;
+                justify-content: flex-start; /* Start from top */
+                align-items: center;
+                padding-top: 120px; /* Push links down so they aren't hidden by header */
+                gap: 2rem; /* Space between links */
+                transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+                border-left: 1px solid #333;
+                box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+                z-index: 1001; /* Ensure it sits ON TOP of everything */
+            }
+            
+            .nav-links.active { 
+                right: 0; /* Slide in */
+            }
+            
+            .nav-link { 
+                font-size: 1.5rem; 
+                padding: 10px 0; 
+                width: 100%;
+                text-align: center;
+            }
+            
+            /* Burger Animation Fixes */
             .menu-toggle.active .bar:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
             .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
             .menu-toggle.active .bar:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
