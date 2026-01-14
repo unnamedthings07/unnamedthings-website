@@ -117,14 +117,15 @@
         /* Glitch Title */
         .glitch-wrapper { position: relative; display: inline-block; margin-bottom: 3rem; text-align: center; width: 100%; }
         .glitch {
-            font-family: var(--font-mono);
-            font-size: 3.5rem;
-            color: var(--color-red);
-            position: relative;
-            z-index: 2;
-            line-height: 1;
-            display: inline-block;
-        }
+    font-family: var(--font-mono);
+    /* REPLACE fixed size with clamp */
+    font-size: clamp(2rem, 8vw, 3.5rem); 
+    color: var(--color-red);
+    position: relative;
+    z-index: 2;
+    line-height: 1;
+    display: inline-block;
+}
         .glitch::before, .glitch::after {
             content: attr(data-text);
             position: absolute;
@@ -212,11 +213,24 @@
         .nav-link:hover::after, .nav-link.active::after { width: 100%; }
 
         /* Mobile Nav Toggle */
-        .menu-toggle { display: none; cursor: pointer; background: none; border: none; z-index: 1002; }
-        .bar {
-            width: 25px; height: 2px; background: var(--color-red);
-            margin: 6px 0; transition: 0.4s;
-        }
+        /* Find this and update */
+.bar {
+    display: block; /* <--- CRITICAL FIX */
+    width: 25px; 
+    height: 3px; 
+    background: var(--color-red);
+    margin: 6px auto; 
+    transition: 0.4s;
+}
+/* Update .menu-toggle right above it */
+.menu-toggle { 
+    display: none; 
+    cursor: pointer; 
+    background: none; 
+    border: none; 
+    z-index: 1002; 
+    padding: 10px; 
+}
 
         /* --- Main Content Area --- */
         main {
@@ -427,34 +441,57 @@
         }
 
         /* --- Mobile Responsive --- */
-        @media (max-width: 768px) {
-            body { background-attachment: scroll; }
-            .glitch { font-size: 2.5rem; }
-            .files-grid { grid-template-columns: 1fr; gap: 2rem; padding: 0 1rem; }
-            
-            /* Mobile Menu */
-            .menu-toggle { display: block; }
-            .nav-links {
-                position: fixed;
-                top: 0; right: -100%;
-                width: 80%;
-                height: 100dvh;
-                background: rgba(10, 10, 10, 0.98);
-                backdrop-filter: blur(15px);
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-                border-left: 1px solid #222;
-                box-shadow: -10px 0 30px rgba(0,0,0,0.8);
-            }
-            .nav-links.active { right: 0; }
-            .nav-link { font-size: 1.5rem; padding: 10px 0; }
-            
-            .menu-toggle.active .bar:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
-            .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
-            .menu-toggle.active .bar:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
-        }
+       @media (max-width: 768px) {
+    body { background-attachment: scroll; }
+    
+    /* 1. Navbar Fixes */
+    .menu-toggle { display: block; }
+    
+    .nav-links {
+        position: fixed;
+        top: 0; right: -100%;
+        width: 80%;
+        height: 100dvh; /* Dynamic Height */
+        background: rgba(10, 10, 10, 0.98);
+        backdrop-filter: blur(15px);
+        flex-direction: column;
+        justify-content: flex-start; /* Align top */
+        padding-top: 120px; /* Space for logo */
+        align-items: center;
+        gap: 2rem;
+        transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+        border-left: 1px solid #333;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+        z-index: 1001; /* On top of everything */
+    }
+    .nav-links.active { right: 0; }
+    .nav-link { font-size: 1.5rem; padding: 10px 0; width: 100%; text-align: center; }
+    
+    /* Hamburger Animation */
+    .menu-toggle.active .bar:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
+    .menu-toggle.active .bar:nth-child(2) { opacity: 0; }
+    .menu-toggle.active .bar:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
+
+    /* 2. Grid & Card Optimizations */
+    .files-grid { 
+        grid-template-columns: 1fr; 
+        gap: 2rem; 
+        padding: 0 1rem; 
+    }
+    
+    .file-card {
+        /* Remove hover scale for mobile (performance) */
+        transform: none !important;
+        /* Make the red border always visible so it looks "clickable" */
+        border-left-color: #ff4d4d;
+        border-color: #444;
+    }
+    
+    /* Adjust image height for mobile */
+    .file-img-wrapper {
+        height: 200px;
+    }
+}
     </style>
 </head>
 <body>
