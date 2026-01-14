@@ -88,8 +88,8 @@
             letter-spacing: 1px;
             margin-bottom: 1rem;
             color: var(--color-platinum);
-            word-wrap: break-word; 
-            overflow-wrap: break-word;
+            overflow-wrap: break-word; /* Prevents overflow */
+            word-wrap: break-word;
         }
         
         .text-red { color: var(--color-red); }
@@ -120,6 +120,7 @@
             position: relative;
             z-index: 2;
             word-wrap: break-word;
+            overflow-wrap: break-word; /* Ensure wrapping on mobile */
         }
         
         .glitch::before, .glitch::after {
@@ -263,6 +264,7 @@
             color: #ddd;
             line-height: 1.8;
             word-wrap: break-word; 
+            overflow-wrap: anywhere; /* FIX: Prevents long words pushing out */
         }
         .article-body h2 { color: var(--color-red); margin-top: 3.5rem; border-left: 3px solid var(--color-red); padding-left: 1rem; font-size: 1.8rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
         .article-body h3 { color: #fff; margin-top: 2rem; font-size: 1.4rem; font-family: var(--font-heading); }
@@ -452,6 +454,10 @@
                 opacity: 0.6;
             }
             
+            /* FIX: Remove rotation on mobile images to prevent overflow */
+            .evidence-photo-container { transform: none; border-width: 2px; }
+            .inline-evidence-photo { transform: none; }
+            
             /* --- 3. Readable Typography --- */
             .article-body { font-size: 1.05rem; line-height: 1.7; color: #e0e0e0; }
             .article-body p { margin-bottom: 1.25rem; }
@@ -464,12 +470,13 @@
             .timeline-dot { width: 12px; height: 12px; left: -7px; }
             .timeline-date { font-size: 0.8rem; letter-spacing: 0.5px; }
             
-            /* Table: Clean horizontal scroll */
+            /* Table: Fix width calculation for mobile */
             .table-responsive { 
-                border: none; border-top: 1px solid #333; border-bottom: 1px solid #333;
-                margin: 2rem -1.25rem; 
-                width: calc(100% + 2.5rem);
-                padding-left: 1.25rem; 
+                width: 100vw; 
+                margin-left: -1.25rem; /* Counteract padding */
+                margin-right: -1.25rem;
+                border-left: 0; border-right: 0; border-radius: 0;
+                margin-top: 2rem; margin-bottom: 2rem;
             }
         }
 
@@ -784,7 +791,7 @@
                                 <tr><td>Didier Sambuchi</td><td>67</td><td>Retired Truck Driver</td><td>5 years</td></tr>
                                 <tr><td>Jacques Cubeau</td><td>73</td><td>Retired Firefighter</td><td>5 years (3 suspended)</td></tr>
                                 <tr><td>Philippe Leleu</td><td>62</td><td>---</td><td>5 years (2 suspended)</td></tr>
-                                 <tr><td>Joseph Cocco</td><td>69</td><td>---</td><td>3 years</td></tr>
+                                <tr><td>Joseph Cocco</td><td>69</td><td>---</td><td>3 years</td></tr>
                                 <tr><td>Saifeddine Ghabi</td><td>36</td><td>Truck Driver</td><td>3 years</td></tr>
                             </tbody>
                         </table>
