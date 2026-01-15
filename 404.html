@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signal Lost - Unnamed Things</title>
+    <link rel="icon" type="image/jpeg" href="https://i.ibb.co/0jxSvdfH/channels4-profile.jpg">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto:wght@300;400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Shared Variables (Matching your site) --- */
+        :root {
+            --color-red: #CD201F;
+            --color-red-dim: #8a1515;
+            --color-black: #020202;
+            --color-platinum: #E0E0E0;
+            --font-heading: 'Oswald', sans-serif;
+            --font-mono: 'Special Elite', cursive;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: var(--color-black);
+            color: var(--color-platinum);
+            font-family: var(--font-heading);
+            height: 100vh;
+            overflow: hidden; /* Lock scroll for 404 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            position: relative;
+        }
+
+        /* --- Background Effects --- */
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.08; pointer-events: none; z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .crt-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%), linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 100%, 100% 4px;
+            pointer-events: none; z-index: 2;
+        }
+
+        /* --- 404 Content --- */
+        .error-container {
+            z-index: 10;
+            padding: 2rem;
+            border: 1px solid #333;
+            background: rgba(10, 5, 5, 0.8);
+            backdrop-filter: blur(5px);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+        }
+        
+        /* Red Corner Borders */
+        .corner {
+            position: absolute; width: 20px; height: 20px;
+            border: 2px solid var(--color-red);
+            transition: all 0.3s ease;
+        }
+        .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        .error-code {
+            font-size: clamp(6rem, 15vw, 10rem);
+            line-height: 1;
+            margin: 0;
+            color: var(--color-red);
+            font-family: var(--font-heading);
+            position: relative;
+            animation: text-flicker 3s infinite;
+        }
+
+        .error-msg {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .error-sub {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 2.5rem;
+            margin-top: 0.5rem;
+        }
+
+        /* --- Button --- */
+        .btn-return {
+            display: inline-block;
+            padding: 15px 30px;
+            background: transparent;
+            border: 1px solid var(--color-red);
+            color: var(--color-red);
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-return:hover {
+            background: var(--color-red);
+            color: #000;
+            box-shadow: 0 0 20px var(--color-red);
+        }
+
+        /* --- Animations --- */
+        @keyframes text-flicker {
+            0% { opacity: 1; }
+            5% { opacity: 0.3; transform: skewX(10deg); }
+            10% { opacity: 1; transform: skewX(0deg); }
+            15% { opacity: 1; }
+            20% { opacity: 0.1; transform: skewX(-10deg); }
+            25% { opacity: 1; transform: skewX(0deg); }
+            100% { opacity: 1; }
+        }
+
+        /* Scanline wipe effect */
+        .scan-line {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 5px;
+            background: rgba(205, 32, 31, 0.3);
+            opacity: 0.4;
+            animation: scan 6s linear infinite;
+            pointer-events: none;
+            z-index: 5;
+        }
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+    <div class="crt-overlay"></div>
+    <div class="scan-line"></div>
+
+    <div class="error-container">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+
+        <h1 class="error-code">404</h1>
+        <p class="error-msg">Signal Lost</p>
+        <p class="error-sub">// The file you are looking for has been redacted or does not exist.</p>
+
+        <a href="https://www.unnamedthings07.qzz.io/" class="btn-return">
+            Re-Establish Connection
+        </a>
+    </div>
+
+</body>
+</html>
