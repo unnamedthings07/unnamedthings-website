@@ -252,6 +252,67 @@
             margin-top: 2rem;
         }
 
+        /* --- Search Bar Styles --- */
+.search-wrapper {
+    max-width: 600px;
+    margin: 0 auto 3rem auto;
+    position: relative;
+    z-index: 10;
+}
+
+.search-box {
+    position: relative;
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--color-red);
+    box-shadow: 0 0 15px rgba(205, 32, 31, 0.2);
+}
+
+.search-icon {
+    padding: 0 15px;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+.search-box:focus-within .search-icon {
+    color: var(--color-red);
+}
+
+#articleSearch {
+    width: 100%;
+    padding: 15px 15px 15px 0;
+    background: transparent;
+    border: none;
+    color: var(--color-white);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#articleSearch::placeholder {
+    color: #444;
+}
+
+.no-results {
+    display: none; /* Hidden by default */
+    text-align: center;
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+    color: var(--color-red);
+    border: 1px dashed var(--color-red-dim);
+    padding: 1rem;
+    background: rgba(205, 32, 31, 0.05);
+}
+
         /* --- Case File Card Design --- */
         .file-card {
             background: url('https://www.transparenttextures.com/patterns/dark-leather.png'), #1a1a1a;
@@ -531,6 +592,16 @@
                     <h1 class="glitch" data-text="CASE ARCHIVES">CASE ARCHIVES</h1>
                 </div>
 
+                <div class="search-wrapper reveal-up delay-1">
+    <div class="search-box">
+        <span class="search-icon">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </span>
+        <input type="text" id="articleSearch" placeholder="SEARCH DATABASE // ENTER KEYWORDS..." autocomplete="off">
+    </div>
+    <div id="noResults" class="no-results">NO FILES FOUND MATCHING QUERY.</div>
+</div>
+
                 <div class="files-grid">
                     
                     <!-- Case File 1: Dominique Pelicot -->
@@ -607,6 +678,39 @@
                 menuToggle.classList.remove('active');
                 navLinks.classList.remove('active');
             }));
+            // --- Article Search Functionality ---
+    const searchInput = document.getElementById('articleSearch');
+    const fileCards = document.querySelectorAll('.file-card');
+    const noResultsMsg = document.getElementById('noResults');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            fileCards.forEach(card => {
+                // Get the text content from title, ID, and excerpt
+                const title = card.querySelector('.file-title').textContent.toLowerCase();
+                const id = card.querySelector('.file-id').textContent.toLowerCase();
+                const excerpt = card.querySelector('.file-excerpt').textContent.toLowerCase();
+
+                // Check if search term exists in any of these
+                if (title.includes(searchTerm) || id.includes(searchTerm) || excerpt.includes(searchTerm)) {
+                    card.style.display = "flex"; // Show match
+                    visibleCount++;
+                } else {
+                    card.style.display = "none"; // Hide non-match
+                }
+            });
+
+            // Show "No Results" message if everything is hidden
+            if (visibleCount === 0) {
+                noResultsMsg.style.display = "block";
+            } else {
+                noResultsMsg.style.display = "none";
+            }
+        });
+    }
         });
     </script>
 </body>
