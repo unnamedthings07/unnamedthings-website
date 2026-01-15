@@ -672,80 +672,117 @@
     </footer>
 
     <!-- Scripts -->
-    <script>
+   <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Mobile Menu Toggle
+            // 1. Scroll Reveal & Redacted Text
+            const reveals = document.querySelectorAll('.reveal-up, .redacted-reveal');
+            const typewriter = document.getElementById('typewriter-text');
+            let typewriterStarted = false;
+
+            const revealOnScroll = () => {
+                const windowHeight = window.innerHeight;
+                const elementVisible = 100;
+
+                reveals.forEach((reveal) => {
+                    const elementTop = reveal.getBoundingClientRect().top;
+                    if (elementTop < windowHeight - elementVisible) {
+                        reveal.classList.add('active');
+                        
+                        if (reveal.contains(typewriter) && !typewriterStarted) {
+                            typewriter.classList.add('active');
+                            typewriterStarted = true;
+                        }
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', revealOnScroll);
+            revealOnScroll(); 
+
+            // 2. Navbar Glass Effect
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) navbar.classList.add('scrolled');
+                else navbar.classList.remove('scrolled');
+            });
+
+            // 3. Mobile Menu Toggle
             const menuToggle = document.querySelector('.menu-toggle');
             const navLinks = document.querySelector('.nav-links');
 
             menuToggle.addEventListener('click', () => {
                 menuToggle.classList.toggle('active');
                 navLinks.classList.toggle('active');
-            });
-
-            // Close mobile menu when clicking a link
-            document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                navLinks.classList.remove('active');
-            }));
-            // --- Article Search Functionality ---
-    const searchInput = document.getElementById('articleSearch');
-    const fileCards = document.querySelectorAll('.file-card');
-    const noResultsMsg = document.getElementById('noResults');
-
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase().trim();
-            let visibleCount = 0;
-
-            fileCards.forEach(card => {
-                // Get the text content from title, ID, and excerpt
-                const title = card.querySelector('.file-title').textContent.toLowerCase();
-                const id = card.querySelector('.file-id').textContent.toLowerCase();
-                const excerpt = card.querySelector('.file-excerpt').textContent.toLowerCase();
-
-                // Check if search term exists in any of these
-                if (title.includes(searchTerm) || id.includes(searchTerm) || excerpt.includes(searchTerm)) {
-                    card.style.display = "flex"; // Show match
-                    visibleCount++;
+                if (navLinks.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
                 } else {
-                    card.style.display = "none"; // Hide non-match
+                    document.body.style.overflow = '';
                 }
             });
 
-            // Show "No Results" message if everything is hidden
-            if (visibleCount === 0) {
-                noResultsMsg.style.display = "block";
-            } else {
-                noResultsMsg.style.display = "none";
-            }
-        });
-    }
-    // --- Static Audio Button Logic ---
-const audioBtn = document.getElementById('staticAudioBtn');
-const bgAudio = document.getElementById('bgAudio');
-const iconMute = document.getElementById('iconMute');
-const iconSound = document.getElementById('iconSound');
-let isPlaying = false;
+            document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+                document.body.style.overflow = '';
+            }));
 
-if(audioBtn && bgAudio) {
-    audioBtn.addEventListener('click', () => {
-        if (!isPlaying) {
-            bgAudio.play().then(() => {
-                isPlaying = true;
-                iconMute.style.display = 'none';
-                iconSound.style.display = 'block';
-                audioBtn.style.boxShadow = "0 0 20px var(--color-red)";
-            }).catch(err => console.log("Audio Play Error:", err));
-        } else {
-            bgAudio.pause();
-            isPlaying = false;
-            iconMute.style.display = 'block';
-            iconSound.style.display = 'none';
-            audioBtn.style.boxShadow = "none";
-        }
-    });
-}
+            // --- 4. SMART AUDIO AUTOPLAY SYSTEM ---
+            const audioBtn = document.getElementById('staticAudioBtn');
+            const bgAudio = document.getElementById('bgAudio');
+            const iconMute = document.getElementById('iconMute');
+            const iconSound = document.getElementById('iconSound');
+            let isPlaying = false;
+
+            // Helper: Update the Visual Button State
+            function updateAudioUI(playing) {
+                if (playing) {
+                    iconMute.style.display = 'none';
+                    iconSound.style.display = 'block';
+                    audioBtn.style.boxShadow = "0 0 20px var(--color-red)";
+                } else {
+                    iconMute.style.display = 'block';
+                    iconSound.style.display = 'none';
+                    audioBtn.style.boxShadow = "none";
+                }
+            }
+
+            // Helper: Function to Start Audio
+            function startAudio() {
+                bgAudio.play().then(() => {
+                    isPlaying = true;
+                    updateAudioUI(true);
+                    console.log("Audio started successfully.");
+                }).catch(error => {
+                    console.log("Autoplay blocked by browser. Waiting for interaction.");
+                    // If blocked, wait for the FIRST user click anywhere to start
+                    document.addEventListener('click', () => {
+                        if (!isPlaying) {
+                            bgAudio.play();
+                            isPlaying = true;
+                            updateAudioUI(true);
+                        }
+                    }, { once: true }); // 'once: true' means it runs only one time
+                });
+            }
+
+            if(audioBtn && bgAudio) {
+                // 1. Try to play immediately on load
+                startAudio();
+
+                // 2. Manual Toggle Button Logic
+                audioBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Don't trigger the document listener
+                    if (!isPlaying) {
+                        bgAudio.play();
+                        isPlaying = true;
+                        updateAudioUI(true);
+                    } else {
+                        bgAudio.pause();
+                        isPlaying = false;
+                        updateAudioUI(false);
+                    }
+                });
+            }
         });
     </script>
     <audio id="bgAudio" loop>
