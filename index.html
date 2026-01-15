@@ -802,6 +802,72 @@
             .container { width: 92%; }
             .video-wrapper { margin-top: 2rem; }
         }
+        /* --- Audio Terminal Widget --- */
+.audio-terminal {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 280px;
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid #333;
+    padding: 15px;
+    z-index: 1003;
+    font-family: var(--font-mono);
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    border-left: 3px solid #444;
+    transition: all 0.3s ease;
+}
+.audio-terminal.active {
+    border-left-color: var(--color-red);
+    box-shadow: 0 0 25px rgba(205, 32, 31, 0.2);
+}
+.terminal-header {
+    display: flex; align-items: center; margin-bottom: 10px; font-size: 0.8rem; color: #666; letter-spacing: 1px;
+}
+.status-light {
+    width: 8px; height: 8px; background: #444; border-radius: 50%; margin-right: 8px; transition: all 0.3s;
+}
+.audio-terminal.active .status-light {
+    background: var(--color-red); box-shadow: 0 0 10px var(--color-red); animation: pulse-red 2s infinite;
+}
+.audio-terminal.active .status-text { color: var(--color-platinum); }
+
+/* Visualizer Bars */
+.waveform-display {
+    display: flex; align-items: center; justify-content: space-between; height: 30px;
+    background: #000; border: 1px solid #222; padding: 0 5px; margin-bottom: 10px; opacity: 0.5;
+}
+.audio-terminal.active .waveform-display { opacity: 1; }
+.waveform-display .bar {
+    width: 4px; height: 20%; background: var(--color-red); transition: height 0.1s ease;
+}
+
+/* Controls */
+.terminal-controls { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.btn-terminal {
+    background: transparent; border: 1px solid #444; color: #888; font-family: var(--font-mono);
+    font-size: 0.7rem; padding: 5px 10px; cursor: pointer; text-transform: uppercase; transition: all 0.3s; flex-grow: 1;
+}
+.btn-terminal:hover { border-color: var(--color-platinum); color: var(--color-platinum); }
+.audio-terminal.active .btn-terminal { border-color: var(--color-red); color: var(--color-red); }
+#volumeSlider { width: 60px; accent-color: var(--color-red); cursor: pointer; }
+
+/* Mobile Optimization */
+@media (max-width: 768px) {
+    .audio-terminal {
+        width: 50px; height: 50px; border-radius: 50%; padding: 0;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        bottom: 25px; left: 20px; border: 2px solid #333;
+    }
+    .audio-terminal.expanded {
+        width: 280px; height: auto; border-radius: 0; padding: 15px; border-left: 3px solid var(--color-red);
+    }
+    .audio-terminal::after { content: '♫'; color: #666; font-size: 1.2rem; }
+    .audio-terminal.active::after { color: var(--color-red); }
+    .audio-terminal:not(.expanded) > * { display: none; }
+    .audio-terminal:not(.expanded)::after { display: block; }
+}
+@keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -980,6 +1046,27 @@
             </a>
         </div>
     </section>
+    <div class="audio-terminal">
+    <div class="terminal-header">
+        <span class="status-light"></span>
+        <span class="status-text">AUDIO FEED: OFFLINE</span>
+    </div>
+    
+    <div class="waveform-display">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    </div>
+
+    <div class="terminal-controls">
+        <button id="toggleAudio" class="btn-terminal">INITIALIZE MONITORING</button>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <audio id="bgAudio" loop>
+        <source src="./dark-ambient-emotions-music-259996.mp3" type="audio/mp3">
+    </audio>
+</div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1060,6 +1147,57 @@
                 document.body.style.overflow = ''; // Release scroll
             }));
         });
+        // --- Audio Widget Logic ---
+    const audioWidget = document.querySelector('.audio-terminal');
+    const audioBtn = document.getElementById('toggleAudio');
+    const bgAudio = document.getElementById('bgAudio');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const statusText = document.querySelector('.status-text');
+    const bars = document.querySelectorAll('.waveform-display .bar');
+    
+    let isPlaying = false;
+    let animationInterval;
+
+    // Mobile Toggle
+    if (window.innerWidth <= 768) {
+        audioWidget.addEventListener('click', (e) => {
+            if (e.target.closest('.terminal-controls')) return;
+            audioWidget.classList.toggle('expanded');
+        });
+    }
+
+    // Play/Pause
+    audioBtn.addEventListener('click', () => {
+        if (!isPlaying) {
+            bgAudio.play().then(() => {
+                isPlaying = true;
+                audioWidget.classList.add('active');
+                audioBtn.innerText = "TERMINATE FEED";
+                if(statusText) statusText.innerText = "AUDIO FEED: LIVE";
+                
+                // Visualizer Animation
+                animationInterval = setInterval(() => {
+                    bars.forEach(bar => {
+                        const height = Math.floor(Math.random() * 90) + 10;
+                        bar.style.height = height + "%";
+                    });
+                }, 100);
+            }).catch(err => console.log("Audio Error: " + err));
+        } else {
+            bgAudio.pause();
+            isPlaying = false;
+            audioWidget.classList.remove('active');
+            audioBtn.innerText = "INITIALIZE MONITORING";
+            if(statusText) statusText.innerText = "AUDIO FEED: PAUSED";
+            clearInterval(animationInterval);
+            bars.forEach(bar => bar.style.height = "20%");
+        }
+    });
+
+    // Volume
+    volumeSlider.addEventListener('input', (e) => {
+        bgAudio.volume = e.target.value;
+    });
     </script>
 </body>
 </html>
