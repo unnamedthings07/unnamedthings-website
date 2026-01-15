@@ -88,7 +88,7 @@
             letter-spacing: 1px;
             margin-bottom: 1rem;
             color: var(--color-platinum);
-            overflow-wrap: break-word; /* Prevents overflow */
+            overflow-wrap: break-word; 
             word-wrap: break-word;
         }
         
@@ -120,7 +120,7 @@
             position: relative;
             z-index: 2;
             word-wrap: break-word;
-            overflow-wrap: break-word; /* Ensure wrapping on mobile */
+            overflow-wrap: break-word; 
         }
         
         .glitch::before, .glitch::after {
@@ -264,7 +264,7 @@
             color: #ddd;
             line-height: 1.8;
             word-wrap: break-word; 
-            overflow-wrap: anywhere; /* FIX: Prevents long words pushing out */
+            overflow-wrap: anywhere; 
         }
         .article-body h2 { color: var(--color-red); margin-top: 3.5rem; border-left: 3px solid var(--color-red); padding-left: 1rem; font-size: 1.8rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; }
         .article-body h3 { color: #fff; margin-top: 2rem; font-size: 1.4rem; font-family: var(--font-heading); }
@@ -310,27 +310,27 @@
         .footer { background: #020202; padding: 60px 0; text-align: center; border-top: 1px solid #222; margin-top: auto; }
         .footer p { color: #666; font-size: 0.9rem; max-width: 500px; margin: 0 auto; }
 
-        /* --- Interactive Timeline Styles (BASE - MOVED UP) --- */
+        /* --- Interactive Timeline Styles --- */
         .timeline-container {
             position: relative;
             padding: 2rem 0;
             margin: 2rem 0;
-            border-left: 2px solid #333; /* The vertical line */
-            margin-left: 1rem; /* Spacing from left edge */
+            border-left: 2px solid #333;
+            margin-left: 1rem;
         }
 
         .timeline-item {
             position: relative;
-            padding-left: 2.5rem; /* Space for the dot and line */
+            padding-left: 2.5rem;
             margin-bottom: 3rem;
-            opacity: 0; /* Hidden initially */
-            transform: translateX(-20px); /* Slide effect start pos */
+            opacity: 0;
+            transform: translateX(-20px);
             transition: all 0.6s var(--ease-out);
         }
 
         .timeline-dot {
             position: absolute;
-            left: -9px; /* Centers it on the 2px border line */
+            left: -9px;
             top: 0;
             width: 16px;
             height: 16px;
@@ -408,13 +408,83 @@
             box-shadow: 0 0 10px var(--color-red), 0 0 20px var(--color-red); 
         }
 
-        /* --- Mobile Responsive (MUST BE LAST) --- */
+        /* --- FLOATING EVIDENCE INDEX (MOBILE) --- */
+        /* Hidden on Desktop */
+        .mobile-toc {
+            display: none;
+        }
+
         @media (max-width: 900px) {
             .article-container { grid-template-columns: 1fr; }
             .sidebar { display: none; }
             .case-file-wrapper { padding: 1.5rem; }
             .glitch { font-size: 1.8rem; }
-            .mobile-toc { display: block; }
+            
+            /* Enable Floating Widget */
+            .mobile-toc { 
+                display: block; 
+                position: fixed;
+                bottom: 25px; /* Floats above bottom */
+                right: 20px; 
+                z-index: 1002; /* High Z-Index to stay on top */
+            }
+            
+            /* The Button (Summary) */
+            .mobile-toc summary {
+                background: var(--color-red-dim);
+                color: #fff;
+                padding: 12px 20px;
+                border-radius: 50px; /* Pill shape */
+                font-family: var(--font-heading);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-size: 0.9rem;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+                border: 1px solid var(--color-red);
+                cursor: pointer;
+                list-style: none;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transition: all 0.3s ease;
+            }
+            .mobile-toc summary::after { content: '+'; font-weight: bold; font-size: 1.2rem; }
+            .mobile-toc[open] summary { background: #111; border-color: #444; }
+            .mobile-toc[open] summary::after { content: '-'; }
+
+            /* The Popup List */
+            .mobile-toc-list {
+                position: absolute;
+                bottom: 60px; /* Pushes list UP above button */
+                right: 0;
+                width: 260px;
+                background: rgba(10, 10, 10, 0.95);
+                backdrop-filter: blur(10px);
+                border: 1px solid #333;
+                border-radius: 8px;
+                padding: 10px;
+                margin: 0;
+                list-style: none;
+                box-shadow: 0 10px 40px rgba(0,0,0,1);
+                animation: slideUp 0.3s ease-out;
+            }
+            
+            .mobile-toc-item a {
+                display: block;
+                padding: 12px 10px;
+                color: #ccc;
+                font-family: var(--font-heading);
+                font-size: 0.9rem;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                text-decoration: none;
+            }
+            .mobile-toc-item a:hover { color: var(--color-red); padding-left: 15px; }
+            .mobile-toc-item:last-child a { border-bottom: none; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         @media (max-width: 768px) {
@@ -479,47 +549,6 @@
                 margin-top: 2rem; margin-bottom: 2rem;
             }
         }
-
-        /* --- NEW: Mobile Collapsible TOC Styles --- */
-        .mobile-toc {
-            display: none; 
-            margin-bottom: 2rem;
-            border: 1px solid #333;
-            background: rgba(20, 20, 20, 0.5);
-            border-radius: 4px;
-        }
-        .mobile-toc[open] { background: #111; border-color: var(--color-red-dim); }
-        .mobile-toc summary {
-            padding: 15px;
-            font-family: var(--font-mono);
-            color: var(--color-red);
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-        .mobile-toc summary::after { content: '+'; font-size: 1.2rem; }
-        .mobile-toc[open] summary::after { content: '-'; }
-
-        .mobile-toc-list {
-            padding: 0 15px 15px 15px;
-            margin: 0;
-            list-style: none;
-            border-top: 1px solid #333;
-        }
-        .mobile-toc-item a {
-            display: block;
-            padding: 10px 0;
-            color: #888;
-            font-family: var(--font-heading);
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .mobile-toc-item a:hover { color: #fff; padding-left: 5px; }
     </style>
 </head>
 <body>
@@ -546,6 +575,19 @@
     </div>
     </nav>
 
+    <details class="mobile-toc">
+        <summary>CASE INDEX</summary>
+        <ul class="mobile-toc-list">
+            <li class="mobile-toc-item"><a href="#discovery">01. The Discovery</a></li>
+            <li class="mobile-toc-item"><a href="#architect">02. The Architect</a></li>
+            <li class="mobile-toc-item"><a href="#chronology">03. The Chronology</a></li>
+            <li class="mobile-toc-item"><a href="#everyman">04. The 50 Men</a></li>
+            <li class="mobile-toc-item"><a href="#trial">05. The Trial</a></li>
+            <li class="mobile-toc-item"><a href="#verdict">06. The Verdict</a></li>
+            <li class="mobile-toc-item"><a href="#aftermath">07. Legacy</a></li>
+        </ul>
+    </details>
+
     <main>
         <div class="container article-container">
             
@@ -569,18 +611,7 @@
                 </div>
 
                 <div class="article-body">
-                    <details class="mobile-toc">
-        <summary>OPEN EVIDENCE INDEX</summary>
-        <ul class="mobile-toc-list">
-            <li class="mobile-toc-item"><a href="#discovery">01. The Discovery</a></li>
-            <li class="mobile-toc-item"><a href="#architect">02. The Architect</a></li>
-            <li class="mobile-toc-item"><a href="#chronology">03. The Chronology</a></li>
-            <li class="mobile-toc-item"><a href="#everyman">04. The 50 Men</a></li>
-            <li class="mobile-toc-item"><a href="#trial">05. The Trial</a></li>
-            <li class="mobile-toc-item"><a href="#verdict">06. The Verdict</a></li>
-            <li class="mobile-toc-item"><a href="#aftermath">07. Legacy</a></li>
-        </ul>
-    </details>
+                    
                     <p>
                         For nearly 50 years, Gisèle Pelicot lived a life she believed was built on love and trust. Her husband, Dominique Pelicot, was, in her words, "someone I trusted entirely". He was a doting family man, a retired electrician who organized surprise birthday parties and was seen as a "role model" by his children's friends.
                     </p>
@@ -791,7 +822,7 @@
                                 <tr><td>Didier Sambuchi</td><td>67</td><td>Retired Truck Driver</td><td>5 years</td></tr>
                                 <tr><td>Jacques Cubeau</td><td>73</td><td>Retired Firefighter</td><td>5 years (3 suspended)</td></tr>
                                 <tr><td>Philippe Leleu</td><td>62</td><td>---</td><td>5 years (2 suspended)</td></tr>
-                                <tr><td>Joseph Cocco</td><td>69</td><td>---</td><td>3 years</td></tr>
+                                 <tr><td>Joseph Cocco</td><td>69</td><td>---</td><td>3 years</td></tr>
                                 <tr><td>Saifeddine Ghabi</td><td>36</td><td>Truck Driver</td><td>3 years</td></tr>
                             </tbody>
                         </table>
