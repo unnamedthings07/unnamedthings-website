@@ -310,7 +310,14 @@
             letter-spacing: 1px;
         }
         
-        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links { 
+    display: flex; 
+    gap: 2rem; 
+    list-style: none;
+    /* This pushes the links (and the buttons after them) to the far right */
+    margin-left: auto; 
+    margin-right: 30px; 
+}
         .nav-link {
             font-family: var(--font-mono);
             font-size: 1.1rem;
