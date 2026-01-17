@@ -770,7 +770,7 @@
   const app = initializeApp(firebaseConfig);
   
   // *** THIS IS THE FIX FOR YOUR SPECIFIC DATABASE NAME ***
-  const db = getFirestore(app, "Database"); 
+  const db = getFirestore(app); 
 
   // 4. Fetch Cases
   async function fetchCases() {
