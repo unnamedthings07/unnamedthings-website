@@ -612,45 +612,11 @@
     <div id="noResults" class="no-results">NO FILES FOUND MATCHING QUERY.</div>
 </div>
 
-                <div class="files-grid">
-                    
-                    <!-- Case File 1: Dominique Pelicot -->
-                    <a href="https://www.unnamedthings07.qzz.io/articles/dominique-pelicot" class="file-card reveal-up delay-1">
-                        <div class="file-stamp">OPEN CASE</div>
-                        <div class="file-img-wrapper">
-                            <img src="https://i.ibb.co/KpRT9St4/dominique-1.jpg" alt="Dominique Pelicot" class="file-img">
-                        </div>
-                        <div class="file-content">
-                            <span class="file-id">CASE FILE #001</span>
-                            <h3 class="file-title">The Pelicot Affair</h3>
-                            <p class="file-excerpt">
-                                An in-depth examination of Dominique Pelicot, a man who drugged his wife for a decade to facilitate her abuse by strangers. A look into the banality of evil.
-                            </p>
-                            <span class="read-more">Access File &rarr;</span>
-                        </div>
-                    </a>
-
-                    <!-- Case File 2: Placeholder (Example for future) -->
-                    <!-- 
-                    <a href="#" class="file-card reveal-up delay-2" style="opacity: 0.5; pointer-events: none;">
-                        <div class="file-stamp" style="border-color: #555; color: #555;">PENDING</div>
-                        <div class="file-img-wrapper">
-                            <img src="https://via.placeholder.com/400x300/111/333?text=RESTRICTED" alt="Pending Case" class="file-img" style="filter: grayscale(100%);">
-                        </div>
-                        <div class="file-content">
-                            <span class="file-id">CASE FILE #002</span>
-                            <h3 class="file-title">Coming Soon</h3>
-                            <p class="file-excerpt">
-                                Investigation currently underway. Evidence is being gathered and verified. Access restricted until further notice.
-                            </p>
-                            <span class="read-more">Locked &times;</span>
-                        </div>
-                    </a> 
-                    -->
-
-                </div>
-
-            </div>
+                <div class="files-grid" id="database-grid">
+    <div style="grid-column: 1/-1; text-align: center; font-family: var(--font-mono); color: #666; padding: 2rem; border: 1px dashed #333;">
+        ESTABLISHING SECURE CONNECTION...
+    </div>
+</div>
         </section>
     </main>
 
@@ -785,6 +751,81 @@
             }
         });
     </script>
+    <script type="module">
+  // 1. Import Firebase Functions
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. PASTE YOUR CONFIG HERE (From the Firebase Console Project Settings)
+  const firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY_HERE",
+    authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
+  };
+
+  // 3. Initialize Database
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. Function to Fetch and Build Cards
+  async function fetchCases() {
+    const grid = document.getElementById('database-grid');
+    
+    try {
+        // Fetch 'cases' collection, sorted by 'order' (1, 2, 3...)
+        const q = query(collection(db, "cases"), orderBy("order", "asc"));
+        const querySnapshot = await getDocs(q);
+
+        // Clear the "Connecting..." text
+        grid.innerHTML = ""; 
+
+        if (querySnapshot.empty) {
+            grid.innerHTML = "<p style='color:var(--color-red); grid-column:1/-1; text-align:center;'>NO ARCHIVES FOUND.</p>";
+            return;
+        }
+
+        // Loop through every document found in the database
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // Generate the HTML exactly as it was before, but using data variables
+            const cardHTML = `
+                <a href="${data.link}" class="file-card reveal-up">
+                    <div class="file-stamp">${data.status}</div>
+                    <div class="file-img-wrapper">
+                        <img src="${data.image}" alt="${data.title}" class="file-img">
+                    </div>
+                    <div class="file-content">
+                        <span class="file-id">${data.caseId}</span>
+                        <h3 class="file-title">${data.title}</h3>
+                        <p class="file-excerpt">${data.excerpt}</p>
+                        <span class="read-more">Access File &rarr;</span>
+                    </div>
+                </a>
+            `;
+            
+            // Add the card to the grid
+            grid.innerHTML += cardHTML;
+        });
+
+        // 5. Force the new cards to be visible (bypass scroll animation for loaded content)
+        setTimeout(() => {
+            const newCards = grid.querySelectorAll('.reveal-up');
+            newCards.forEach(card => card.classList.add('active'));
+        }, 100);
+
+    } catch (e) {
+        console.error("Database Error:", e);
+        grid.innerHTML = "<p style='color:var(--color-red); grid-column:1/-1; text-align:center;'>CONNECTION LOST.</p>";
+    }
+  }
+
+  // Run this function immediately when the page loads
+  document.addEventListener('DOMContentLoaded', fetchCases);
+</script>
     <audio id="bgAudio" loop>
     <source src="../dark-ambient-emotions-music-259996.mp3" type="audio/mp3">
 </audio>
