@@ -752,11 +752,11 @@
         });
     </script>
     <script type="module">
-  // 1. Import Firebase Functions
+  // 1. Import Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. PASTE YOUR CONFIG HERE (From the Firebase Console Project Settings)
+  // 2. YOUR CONFIG (Replace these with your keys from Project Settings)
   const firebaseConfig = {
   apiKey: "AIzaSyCThFmpCW6pWIkfE9IJhseaVGa5AG60XAc",
   authDomain: "unnamed-things-website.firebaseapp.com",
@@ -766,32 +766,31 @@
   appId: "1:988001929712:web:1181cd9e6eb2b5407af535"
 };
 
-  // 3. Initialize Database
+  // 3. Initialize (Connecting to database named "Database")
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  
+  // *** THIS IS THE FIX FOR YOUR SPECIFIC DATABASE NAME ***
+  const db = getFirestore(app, "Database"); 
 
-  // 4. Function to Fetch and Build Cards
+  // 4. Fetch Cases
   async function fetchCases() {
     const grid = document.getElementById('database-grid');
     
     try {
-        // Fetch 'cases' collection, sorted by 'order' (1, 2, 3...)
+        // Get cases sorted by 'order'
         const q = query(collection(db, "cases"), orderBy("order", "asc"));
         const querySnapshot = await getDocs(q);
 
-        // Clear the "Connecting..." text
-        grid.innerHTML = ""; 
+        grid.innerHTML = ""; // Clear loading text
 
         if (querySnapshot.empty) {
-            grid.innerHTML = "<p style='color:var(--color-red); grid-column:1/-1; text-align:center;'>NO ARCHIVES FOUND.</p>";
+            grid.innerHTML = "<div style='color:red; text-align:center;'>NO ARCHIVES FOUND.</div>";
             return;
         }
 
-        // Loop through every document found in the database
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             
-            // Generate the HTML exactly as it was before, but using data variables
             const cardHTML = `
                 <a href="${data.link}" class="file-card reveal-up">
                     <div class="file-stamp">${data.status}</div>
@@ -806,24 +805,24 @@
                     </div>
                 </a>
             `;
-            
-            // Add the card to the grid
             grid.innerHTML += cardHTML;
         });
 
-        // 5. Force the new cards to be visible (bypass scroll animation for loaded content)
+        // Animation Fix
         setTimeout(() => {
-            const newCards = grid.querySelectorAll('.reveal-up');
-            newCards.forEach(card => card.classList.add('active'));
+            document.querySelectorAll('#database-grid .reveal-up').forEach(el => el.classList.add('active'));
         }, 100);
 
-    } catch (e) {
-        console.error("Database Error:", e);
-        grid.innerHTML = "<p style='color:var(--color-red); grid-column:1/-1; text-align:center;'>CONNECTION LOST.</p>";
+    } catch (error) {
+        console.error("Database Error:", error);
+        grid.innerHTML = `
+            <div style="color: #CD201F; text-align: center; font-family: var(--font-mono);">
+                CONNECTION FAILED. <br>
+                <span style="font-size: 0.8rem; color: #666;">${error.message}</span>
+            </div>`;
     }
   }
 
-  // Run this function immediately when the page loads
   document.addEventListener('DOMContentLoaded', fetchCases);
 </script>
     <audio id="bgAudio" loop>
