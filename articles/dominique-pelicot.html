@@ -1194,7 +1194,8 @@
     </script>
     <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  // ADDED: 'deleteDoc' and 'doc' to imports
+  import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
   import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   // YOUR CONFIG
@@ -1219,7 +1220,7 @@
     const overlay = document.getElementById('loginOverlay');
     const form = document.getElementById('commentFormContainer');
     const avatar = document.getElementById('currentUserAvatar');
-    const navLoginBtn = document.getElementById('navLoginBtn'); // Update Navbar too
+    const navLoginBtn = document.getElementById('navLoginBtn'); 
     const navProfile = document.getElementById('navProfile');
 
     if (user) {
@@ -1247,7 +1248,6 @@
     }
   });
   
-  // Logout Logic
   const logoutBtn = document.getElementById('navLogoutBtn');
   if(logoutBtn) {
       logoutBtn.addEventListener('click', () => {
@@ -1255,7 +1255,7 @@
       });
   }
 
-  // --- 2. INPUT UI LOGIC (Main Form) ---
+  // --- 2. INPUT UI LOGIC ---
   const mainInput = document.getElementById('mainCommentInput');
   const mainWrapper = document.querySelector('.input-wrapper');
   const submitMain = document.getElementById('submitMainBtn');
@@ -1275,7 +1275,6 @@
               submitMain.classList.remove('ready');
               submitMain.disabled = true;
           }
-          // Auto-resize
           mainInput.style.height = 'auto';
           mainInput.style.height = mainInput.scrollHeight + 'px';
       });
@@ -1288,7 +1287,7 @@
       });
 
       submitMain.addEventListener('click', () => {
-          postComment(mainInput.value, null); // null = Parent ID (Top level)
+          postComment(mainInput.value, null); 
           mainInput.value = '';
           mainWrapper.classList.remove('active');
           mainInput.style.height = 'auto';
@@ -1299,7 +1298,6 @@
   async function postComment(text, parentId) {
     if(!currentUser || !text.trim()) return;
 
-    // Use display name or email prefix if name is missing
     const authorName = currentUser.displayName || currentUser.email.split('@')[0];
     const photo = currentUser.photoURL || "https://i.ibb.co/0jxSvdfH/channels4-profile.jpg";
 
@@ -1310,7 +1308,7 @@
             author: authorName,
             photo: photo,
             text: text,
-            parentId: parentId, // Important: This links replies!
+            parentId: parentId, 
             timestamp: serverTimestamp()
         });
     } catch (e) {
@@ -1319,37 +1317,32 @@
     }
   }
 
-  // --- 4. LOAD & RENDER FEED (The Complex Part) ---
+  // --- 4. LOAD FEED & BUILD UI ---
   const feed = document.getElementById('commentsFeed');
 
   function loadFeed() {
-    // Fetch ALL comments for this article
     const q = query(collection(db, "comments"), where("articleId", "==", ARTICLE_ID), orderBy("timestamp", "desc"));
     
     onSnapshot(q, (snapshot) => {
         const allComments = [];
         snapshot.forEach(doc => allComments.push({ id: doc.id, ...doc.data() }));
 
-        // Separate Parents and Replies
         const parents = allComments.filter(c => !c.parentId);
         const replies = allComments.filter(c => c.parentId);
 
-        feed.innerHTML = ""; // Clear feed
+        feed.innerHTML = ""; 
 
         if(parents.length === 0) {
             feed.innerHTML = "<div class='loading-text'>NO RECORDS FOUND. START THE DISCUSSION.</div>";
             return;
         }
 
-        // Render Parents
         parents.forEach(parent => {
             const threadDiv = document.createElement('div');
             threadDiv.className = 'comment-thread';
             threadDiv.innerHTML = buildCommentHTML(parent, false);
             
-            // Find replies for this parent
             const myReplies = replies.filter(r => r.parentId === parent.id);
-            // Sort replies chronological (oldest top)
             myReplies.sort((a,b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
 
             const repliesContainer = document.createElement('div');
@@ -1359,20 +1352,21 @@
                 repliesContainer.innerHTML += buildCommentHTML(reply, true);
             });
 
-            // Append everything
             threadDiv.appendChild(repliesContainer);
             feed.appendChild(threadDiv);
         });
 
-        // Attach Event Listeners to dynamic buttons
         attachDynamicEvents();
     });
   }
 
-  // HTML Builder
+  // --- HTML BUILDER (UPDATED WITH DELETE BUTTON) ---
   function buildCommentHTML(data, isReply) {
     const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : "Just now";
     
+    // CHECK OWNERSHIP
+    const isOwner = currentUser && currentUser.uid === data.uid;
+
     return `
         <div class="comment-main" id="comment-${data.id}">
             <img src="${data.photo}" class="user-avatar-small">
@@ -1382,8 +1376,11 @@
                     <span class="comment-time">${time}</span>
                 </div>
                 <div class="comment-content">${data.text}</div>
+                
                 <div class="comment-actions">
                     ${!isReply ? `<button class="action-btn reply-trigger" data-id="${data.id}">REPLY</button>` : ''}
+                    
+                    ${isOwner ? `<button class="action-btn delete-trigger" data-id="${data.id}" style="color: #900;">DELETE</button>` : ''}
                 </div>
                 
                 ${!isReply ? `
@@ -1404,19 +1401,19 @@
     `;
   }
 
-  // Event Listeners for Dynamic Elements
+  // --- EVENTS (UPDATED WITH DELETE LOGIC) ---
   function attachDynamicEvents() {
-      // 1. Click "REPLY" button -> Show form
+      // Reply Click
       document.querySelectorAll('.reply-trigger').forEach(btn => {
           btn.addEventListener('click', (e) => {
               if(!currentUser) { alert("Please Login First"); return; }
               const id = e.target.getAttribute('data-id');
               document.getElementById(`reply-form-${id}`).style.display = 'block';
-              e.target.style.display = 'none'; // Hide reply button
+              e.target.style.display = 'none'; 
           });
       });
 
-      // 2. Click "CANCEL" -> Hide form
+      // Cancel Reply
       document.querySelectorAll('.cancel-reply').forEach(btn => {
           btn.addEventListener('click', (e) => {
               const id = e.target.getAttribute('data-id');
@@ -1425,12 +1422,27 @@
           });
       });
 
-      // 3. Click "SUBMIT REPLY"
+      // Submit Reply
       document.querySelectorAll('.submit-reply').forEach(btn => {
           btn.addEventListener('click', (e) => {
               const id = e.target.getAttribute('data-id');
               const text = document.getElementById(`reply-input-${id}`).value;
-              postComment(text, id); // id is the Parent ID
+              postComment(text, id); 
+          });
+      });
+
+      // --- NEW: DELETE LOGIC ---
+      document.querySelectorAll('.delete-trigger').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+              const id = e.target.getAttribute('data-id');
+              if(confirm("PERMANENTLY DELETE THIS RECORD?")) {
+                  try {
+                      await deleteDoc(doc(db, "comments", id));
+                  } catch(err) {
+                      console.error("Delete failed:", err);
+                      alert("Error deleting record.");
+                  }
+              }
           });
       });
   }
