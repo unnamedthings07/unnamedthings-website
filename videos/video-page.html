@@ -434,6 +434,58 @@
         width: 20px; height: 20px; /* Smaller corners */
     }
 }
+    /* USER MENU STYLES */
+    .user-menu-container { position: relative; margin-right: 15px; display: flex; align-items: center; }
+    
+    .nav-btn-text {
+        font-family: var(--font-heading, sans-serif); color: #E0E0E0; 
+        border: 1px solid #333; padding: 5px 15px; font-size: 0.9rem;
+        transition: all 0.3s; text-decoration: none;
+    }
+    .nav-btn-text:hover { background: #CD201F; color: #fff; border-color: #CD201F; }
+
+    .nav-profile { cursor: pointer; position: relative; padding-bottom: 10px; margin-bottom: -10px; }
+    .nav-avatar-img { 
+        width: 35px; height: 35px; border-radius: 50%; object-fit: cover;
+        border: 2px solid #333; transition: border 0.3s;
+    }
+    .nav-profile:hover .nav-avatar-img { border-color: #CD201F; }
+
+    /* DROPDOWN MENU */
+    .profile-dropdown {
+        display: none; 
+        position: absolute; 
+        top: 100%; 
+        right: 0;
+        width: 200px;
+        background: rgba(10, 10, 10, 0.95);
+        border: 1px solid #333;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        padding: 10px; 
+        z-index: 2000;
+        margin-top: 5px;
+    }
+
+    /* INVISIBLE BRIDGE (Prevents menu closing) */
+    .profile-dropdown::before {
+        content: ''; position: absolute; top: -20px; left: 0; width: 100%; height: 20px;
+    }
+    
+    .nav-profile:hover .profile-dropdown, .profile-dropdown:hover { display: block; }
+
+    .dropdown-header { 
+        padding: 10px; border-bottom: 1px solid #333; margin-bottom: 5px; 
+        display: flex; flex-direction: column; 
+    }
+    #dropdownName { font-family: var(--font-heading, sans-serif); color: #CD201F; font-weight: bold; }
+    
+    .dropdown-item {
+        width: 100%; background: none; border: none; text-align: left;
+        color: #ccc; font-family: var(--font-mono, monospace); font-size: 0.9rem;
+        padding: 8px 10px; cursor: pointer; transition: color 0.3s;
+    }
+    .dropdown-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -455,6 +507,21 @@
         <li><a href="https://www.unnamedthings07.qzz.io/articles/articles-page" class="nav-link"><span>A</span>rticles</a></li>
         <li><a href="#" class="nav-link active"><span>C</span>onnect</a></li> </ul>
     <div class="nav-actions">
+        <div class="user-menu-container">
+    <a href="../login" id="navLoginBtn" class="nav-btn-text">LOGIN</a>
+
+    <div id="navProfile" class="nav-profile" style="display: none;">
+        <img id="navAvatar" src="" alt="User" class="nav-avatar-img">
+        
+        <div class="profile-dropdown">
+            <div class="dropdown-header">
+                <span id="dropdownName">AGENT</span>
+                <span id="dropdownEmail" style="font-size:0.7rem; color:#666;">...</span>
+            </div>
+            <button id="navLogoutBtn" class="dropdown-item">DISCONNECT</button>
+        </div>
+    </div>
+</div>
         <button id="staticAudioBtn" class="nav-audio-btn" aria-label="Toggle Audio">
             <svg id="iconMute" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7.03-8.77v2.06c2.89.86 5.03 4.05 5.03 7.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
             <svg id="iconSound" viewBox="0 0 24 24" style="display:none;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5.03 4.05 5.03 7.71s-2.14 6.85-5.03 7.71v2.06c4.01-.91 7.03-4.49 7.03-8.77s-3.02-7.86-7.03-8.77z"/></svg>
@@ -621,6 +688,55 @@
             }
         });
     </script>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY",
+    authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
+    projectId: "unnamed-things-website-70cf7",
+    storageBucket: "unnamed-things-website-70cf7.firebasestorage.app",
+    messagingSenderId: "293788800527",
+    appId: "1:293788800527:web:575a1fd1f60d6361f3357a"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // AUTH STATE LISTENER
+  onAuthStateChanged(auth, (user) => {
+    const navLoginBtn = document.getElementById('navLoginBtn');
+    const navProfile = document.getElementById('navProfile');
+    const navAvatar = document.getElementById('navAvatar');
+    const dropdownName = document.getElementById('dropdownName');
+    const dropdownEmail = document.getElementById('dropdownEmail');
+
+    if (user) {
+        // User is Logged In
+        if(navLoginBtn) navLoginBtn.style.display = 'none';
+        if(navProfile) navProfile.style.display = 'block';
+        
+        if(navAvatar) navAvatar.src = user.photoURL || "https://i.ibb.co/0jxSvdfH/channels4-profile.jpg";
+        if(dropdownName) dropdownName.innerText = (user.displayName || "AGENT").toUpperCase();
+        if(dropdownEmail) dropdownEmail.innerText = user.email;
+    } else {
+        // User is Logged Out
+        if(navLoginBtn) navLoginBtn.style.display = 'block';
+        if(navProfile) navProfile.style.display = 'none';
+    }
+  });
+
+  // LOGOUT FUNCTION
+  const logoutBtn = document.getElementById('navLogoutBtn');
+  if(logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.reload();
+        });
+      });
+  }
+</script>
     <audio id="bgAudio" loop>
     <source src="../dark-ambient-emotions-music-259996.mp3" type="audio/mp3">
 </audio>
