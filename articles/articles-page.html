@@ -753,103 +753,113 @@
             }
         });
     </script>
-    <script type="module">
+<script type="module">
   // 1. Import Firebase
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 2. YOUR CONFIG (PASTE KEYS HERE)
+  // 2. YOUR CONFIG
   const firebaseConfig = {
-  apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY",
-  authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
-  projectId: "unnamed-things-website-70cf7",
-  storageBucket: "unnamed-things-website-70cf7.firebasestorage.app",
-  messagingSenderId: "293788800527",
-  appId: "1:293788800527:web:575a1fd1f60d6361f3357a"
-};
+    apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY",
+    authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
+    projectId: "unnamed-things-website-70cf7",
+    storageBucket: "unnamed-things-website-70cf7.firebasestorage.app",
+    messagingSenderId: "293788800527",
+    appId: "1:293788800527:web:575a1fd1f60d6361f3357a"
+  };
 
   // 3. Initialize
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // GLOBAL VARIABLE TO STORE DATA
   let allCases = [];
 
-  // 4. Main Function to Fetch Data
+  // 4. Main Function
   async function initArticles() {
     const grid = document.getElementById('database-grid');
     const searchInput = document.getElementById('articleSearch');
     
     try {
         // Fetch 'cases' collection
+        // NOTE: If this fails, check if you created the Database in your NEW project (unnamed-things-website-70cf7)
         const q = query(collection(db, "cases"), orderBy("order", "asc"));
         const querySnapshot = await getDocs(q);
 
-        // Save data to our global array
         allCases = [];
         querySnapshot.forEach((doc) => {
             allCases.push(doc.data());
         });
 
-        // Initial Render
+        // Render all initially
         renderGrid(allCases);
 
-        // 5. Activate Search Listener
+        // 5. Safe Search Listener
         searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = (e.target.value || "").toLowerCase();
             
-            // Filter the array
-            const filtered = allCases.filter(item => 
-                item.title.toLowerCase().includes(searchTerm) || 
-                item.excerpt.toLowerCase().includes(searchTerm) ||
-                item.caseId.toLowerCase().includes(searchTerm)
-            );
+            const filtered = allCases.filter(item => {
+                // SAFETY CHECK: We use (item.field || "") to prevent crashes if a field is missing
+                const title = (item.title || "").toLowerCase();
+                const excerpt = (item.excerpt || "").toLowerCase();
+                const id = (item.caseId || "").toLowerCase();
+                
+                return title.includes(searchTerm) || excerpt.includes(searchTerm) || id.includes(searchTerm);
+            });
             
             renderGrid(filtered);
         });
 
     } catch (error) {
         console.error("Database Error:", error);
-        grid.innerHTML = `<div style='color:red; text-align:center; grid-column:1/-1;'>CONNECTION FAILED.</div>`;
+        // Show the actual error on screen so you know what's wrong
+        grid.innerHTML = `
+            <div style='color:red; text-align:center; grid-column:1/-1; padding: 2rem; border: 1px dashed red;'>
+                CONNECTION FAILED.<br>
+                <span style="color:#aaa; font-size:0.8rem;">${error.message}</span>
+            </div>`;
     }
   }
 
-  // 6. Function to Draw the Grid
+  // 6. Draw Grid
   function renderGrid(casesToDisplay) {
     const grid = document.getElementById('database-grid');
     const noResults = document.getElementById('noResults');
 
-    grid.innerHTML = ""; // Clear current grid
+    grid.innerHTML = ""; 
 
-    // Handle No Results
     if (casesToDisplay.length === 0) {
         if(noResults) noResults.style.display = 'block';
-        return;
     } else {
         if(noResults) noResults.style.display = 'none';
-    }
+        
+        casesToDisplay.forEach(data => {
+            // Fallbacks for missing data
+            const link = data.link || "#";
+            const status = data.status || "UNKNOWN";
+            const image = data.image || "https://placehold.co/600x400/000000/FFF"; 
+            const title = data.title || "Untitled Case";
+            const excerpt = data.excerpt || "No details available.";
+            const caseId = data.caseId || "FILE #???";
 
-    // Loop through filtered list
-    casesToDisplay.forEach(data => {
-        const cardHTML = `
-            <a href="${data.link}" class="file-card reveal-up active">
-                <div class="file-stamp">${data.status}</div>
-                <div class="file-img-wrapper">
-                    <img src="${data.image}" alt="${data.title}" class="file-img">
-                </div>
-                <div class="file-content">
-                    <span class="file-id">${data.caseId}</span>
-                    <h3 class="file-title">${data.title}</h3>
-                    <p class="file-excerpt">${data.excerpt}</p>
-                    <span class="read-more">Access File &rarr;</span>
-                </div>
-            </a>
-        `;
-        grid.innerHTML += cardHTML;
-    });
+            const cardHTML = `
+                <a href="${link}" class="file-card reveal-up active">
+                    <div class="file-stamp">${status}</div>
+                    <div class="file-img-wrapper">
+                        <img src="${image}" alt="${title}" class="file-img">
+                    </div>
+                    <div class="file-content">
+                        <span class="file-id">${caseId}</span>
+                        <h3 class="file-title">${title}</h3>
+                        <p class="file-excerpt">${excerpt}</p>
+                        <span class="read-more">Access File &rarr;</span>
+                    </div>
+                </a>
+            `;
+            grid.innerHTML += cardHTML;
+        });
+    }
   }
 
-  // Run on load
   document.addEventListener('DOMContentLoaded', initArticles);
 </script>
     <audio id="bgAudio" loop>
