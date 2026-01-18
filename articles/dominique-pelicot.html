@@ -913,23 +913,89 @@
 
         </div>
         <section class="container" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #333;">
-        <h3 class="glitch" style="font-size: 1.5rem; margin-bottom: 2rem;">CLASSIFIED DISCUSSION LOG</h3>
-        
-        <script src="https://giscus.app/client.js"
-        data-repo="unnamedthings07/unnamedthings-website"
-        data-repo-id="R_kgDOQ5DPZg"
-        data-category="General"
-        data-category-id="DIC_kwDOQ5DPZs4C0_JU"
-        data-mapping="title"
-        data-strict="0"
-        data-reactions-enabled="1"
-        data-emit-metadata="0"
-        data-input-position="bottom"
-        data-theme="dark_dimmed"
-        data-lang="en"
-        crossorigin="anonymous"
-        async>
-        </script>
+    <h3 class="glitch" style="font-size: 1.5rem; margin-bottom: 2rem;">CLASSIFIED DISCUSSION LOG</h3>
+    
+    <div class="comment-box">
+        <form id="commentForm">
+            <input type="text" id="aliasInput" placeholder="IDENTIFIER / ALIAS" required maxlength="20">
+            <textarea id="commentInput" placeholder="ENTER OBSERVATION DATA..." required rows="3"></textarea>
+            <button type="submit" id="submitBtn">TRANSMIT RECORD</button>
+        </form>
+    </div>
+
+    <div id="commentsList" class="comments-feed">
+        <div style="color:#666; font-family:var(--font-mono); text-align:center;">INITIALIZING FEED...</div>
+    </div>
+</section>
+
+<style>
+    .comment-box {
+        margin-bottom: 3rem;
+        background: rgba(20, 20, 20, 0.6);
+        border: 1px solid #333;
+        padding: 1.5rem;
+    }
+    
+    #aliasInput, #commentInput {
+        width: 100%;
+        background: #0a0a0a;
+        border: 1px solid #333;
+        color: var(--color-platinum);
+        font-family: var(--font-mono);
+        padding: 10px;
+        margin-bottom: 1rem;
+        outline: none;
+        transition: border 0.3s;
+    }
+    
+    #aliasInput:focus, #commentInput:focus {
+        border-color: var(--color-red);
+    }
+    
+    #submitBtn {
+        background: var(--color-red-dim);
+        color: #fff;
+        border: 1px solid var(--color-red);
+        padding: 10px 20px;
+        font-family: var(--font-heading);
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    #submitBtn:hover {
+        background: var(--color-red);
+        box-shadow: 0 0 15px rgba(205, 32, 31, 0.4);
+    }
+
+    /* Comment Feed Styling */
+    .comment-item {
+        margin-bottom: 1.5rem;
+        border-left: 2px solid #333;
+        padding-left: 1.5rem;
+        animation: fadeIn 0.5s ease;
+    }
+    .comment-header {
+        font-family: var(--font-heading);
+        color: var(--color-red);
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .comment-date {
+        color: #555;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+    }
+    .comment-text {
+        color: #ccc;
+        font-family: var(--font-mono);
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+</style>
         </section>
     </main>
 
@@ -1058,6 +1124,120 @@
         });
     }
     </script>
+    <script type="module">
+  // 1. Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { 
+    getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp 
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. YOUR CONFIG (Matches your other page)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY",
+    authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
+    projectId: "unnamed-things-website-70cf7",
+    storageBucket: "unnamed-things-website-70cf7.firebasestorage.app",
+    messagingSenderId: "293788800527",
+    appId: "1:293788800527:web:575a1fd1f60d6361f3357a"
+  };
+
+  // 3. Initialize
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // 4. CONFIGURATION FOR THIS SPECIFIC ARTICLE
+  const ARTICLE_ID = "dominique-pelicot"; // Unique ID for this page
+
+  // --- FUNCTION: LOAD COMMENTS (Real-time!) ---
+  function loadComments() {
+    const list = document.getElementById('commentsList');
+    
+    // Query: Get comments where articleId == 'dominique-pelicot', sorted by newest
+    const q = query(
+        collection(db, "comments"), 
+        where("articleId", "==", ARTICLE_ID),
+        orderBy("timestamp", "desc")
+    );
+
+    // onSnapshot = Listen for changes instantly
+    onSnapshot(q, (snapshot) => {
+        list.innerHTML = ""; // Clear list
+
+        if (snapshot.empty) {
+            list.innerHTML = "<div style='color:#444; font-family:var(--font-mono);'>NO RECORDS FOUND. BE THE FIRST.</div>";
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : "JUST NOW";
+            
+            // Safe rendering to prevent HTML injection attacks
+            const safeName = data.alias.replace(/</g, "&lt;");
+            const safeText = data.text.replace(/</g, "&lt;");
+
+            const html = `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span>// ${safeName}</span>
+                        <span class="comment-date">${date}</span>
+                    </div>
+                    <div class="comment-text">${safeText}</div>
+                </div>
+            `;
+            list.innerHTML += html;
+        });
+    }, (error) => {
+        console.error("Error:", error);
+        // If index is missing (common first-time error), console will show a link to fix it
+        if(error.code === 'failed-precondition') {
+             console.log("YOU MAY NEED TO CREATE A FIREBASE INDEX. CHECK CONSOLE LINK.");
+        }
+    });
+  }
+
+  // --- FUNCTION: SUBMIT COMMENT ---
+  const form = document.getElementById('commentForm');
+  
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const alias = document.getElementById('aliasInput').value;
+    const text = document.getElementById('commentInput').value;
+    const btn = document.getElementById('submitBtn');
+
+    if(!alias || !text) return;
+
+    // UI Feedback
+    btn.innerText = "TRANSMITTING...";
+    btn.disabled = true;
+
+    try {
+        await addDoc(collection(db, "comments"), {
+            alias: alias,
+            text: text,
+            articleId: ARTICLE_ID, // Important: Links comment to this page
+            timestamp: serverTimestamp()
+        });
+
+        // Reset Form
+        form.reset();
+        btn.innerText = "RECORD TRANSMITTED";
+        setTimeout(() => { 
+            btn.innerText = "TRANSMIT RECORD"; 
+            btn.disabled = false;
+        }, 2000);
+
+    } catch (error) {
+        console.error("Error adding comment: ", error);
+        btn.innerText = "TRANSMISSION FAILED";
+        btn.style.borderColor = "red";
+    }
+  });
+
+  // Start Loading
+  loadComments();
+</script>
     <audio id="bgAudio" loop>
     <source src="../dark-ambient-emotions-music-259996.mp3" type="audio/mp3">
 </audio>
