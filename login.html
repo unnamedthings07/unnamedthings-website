@@ -351,7 +351,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         
-        const app = initializeApp({ apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY", projectId: "unnamed-things-website-70cf7", appId: "1:293788800527:web:575a1fd1f60d6361f3357a" });
+        // FIXED CONFIGURATION: Added authDomain
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY", 
+            authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
+            projectId: "unnamed-things-website-70cf7", 
+            appId: "1:293788800527:web:575a1fd1f60d6361f3357a" 
+        };
+        
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
         
@@ -428,6 +436,7 @@
                 if (error.code === 'auth/popup-blocked') msg = "POPUP BLOCKED. ENABLE OVERLAYS.";
                 if (error.code === 'auth/operation-not-allowed') msg = "GOOGLE LOGIN NOT ENABLED IN FIREBASE CONSOLE.";
                 if (error.code === 'auth/unauthorized-domain') msg = "DOMAIN NOT AUTHORIZED IN FIREBASE CONSOLE.";
+                if (error.code === 'auth/auth-domain-config-required') msg = "CONFIG ERROR: AUTH DOMAIN MISSING.";
                 
                 showMsg(msg, "error");
             }
