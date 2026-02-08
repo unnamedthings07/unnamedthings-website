@@ -3,311 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Identity Verification - Unnamed Things</title>
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+    <title>Access Control // Unnamed Things</title>
+    <link rel="icon" type="image/jpeg" href="https://i.ibb.co/qLDc9kc0/Gemini-Generated-Image-sbm62osbm62osbm6.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Special+Elite&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --color-red: #CD201F; --color-black: #050505; --color-gray: #333; }
-        * { box-sizing: border-box; }
-        
+        :root {
+            --color-red: #CD201F;
+            --color-red-dim: #8a1515;
+            --color-black: #050505;
+            --color-dark: #0a0a0a;
+            --color-text: #E0E0E0;
+            --font-heading: 'Oswald', sans-serif;
+            --font-mono: 'Special Elite', monospace;
+            --font-body: 'Roboto', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             background-color: var(--color-black);
-            color: #fff;
-            font-family: 'Oswald', sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; margin: 0;
-            background-image: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)),
+                url('https://i.ibb.co/Z1M7M8m6/file-00000000ffe8720795dd0af80e4fa438.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-body);
+            color: var(--color-text);
+            overflow: hidden;
+            position: relative;
         }
 
-        .login-card {
-            width: 100%; max-width: 420px;
-            padding: 2.5rem;
-            border: 1px solid var(--color-gray);
-            background: rgba(10, 10, 10, 0.95);
-            position: relative;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        /* --- Ambient Effects --- */
+        .scanlines {
+            position: fixed; inset: 0; pointer-events: none; z-index: 10;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
+            background-size: 100% 3px, 3px 100%;
         }
         
-        /* Red Glow Border */
-        .login-card::before {
-            content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
-            background: linear-gradient(45deg, var(--color-red), transparent, var(--color-red));
-            z-index: -1; filter: blur(5px); opacity: 0.4;
+        .noise {
+            position: fixed; inset: 0; pointer-events: none; z-index: 9; opacity: 0.04;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
 
-        h1 { margin: 0 0 5px 0; letter-spacing: 2px; text-transform: uppercase; color: #fff; text-align: center; }
-        .sub-text { font-family: 'Special Elite', cursive; color: #666; font-size: 0.8rem; margin-bottom: 1.5rem; text-align: center; display: block; }
-
-        /* TABS (Login vs Register) */
-        .tabs { display: flex; border-bottom: 1px solid var(--color-gray); margin-bottom: 1.5rem; }
-        .tab {
-            flex: 1; padding: 10px; text-align: center; cursor: pointer;
-            font-family: 'Special Elite', cursive; color: #666; transition: all 0.3s;
+        /* --- The Terminal Card --- */
+        .access-terminal {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid #333;
+            border-top: 2px solid var(--color-red);
+            padding: 2.5rem;
+            position: relative;
+            z-index: 20;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 30px rgba(205, 32, 31, 0.1);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .tab.active { color: var(--color-red); border-bottom: 2px solid var(--color-red); }
+        .access-terminal:hover {
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 40px rgba(205, 32, 31, 0.2);
+            border-color: #444;
+        }
 
-        /* FORMS */
-        .form-group { margin-bottom: 1rem; }
+        /* --- Decorative Corners --- */
+        .corner {
+            position: absolute; width: 10px; height: 10px;
+            border: 2px solid var(--color-red); opacity: 0.7;
+            transition: all 0.3s;
+        }
+        .tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+        .tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+        .bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+        .br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+        /* --- Typography --- */
+        h1 {
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .status-line {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--color-red);
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 1rem;
+        }
+        .status-line::before { content: '[ '; color: #555; }
+        .status-line::after { content: ' ]'; color: #555; }
+
+        /* --- Forms --- */
+        .form-group { position: relative; margin-bottom: 1.2rem; }
+        
         input {
-            width: 100%; padding: 12px; background: #000; border: 1px solid var(--color-gray);
-            color: #fff; font-family: 'Special Elite', cursive; outline: none; transition: border 0.3s;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            padding: 12px 15px 12px 40px; /* Space for icon */
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
         }
-        input:focus { border-color: var(--color-red); }
-
-        /* BUTTONS */
-        .btn-main {
-            width: 100%; padding: 12px; background: var(--color-red); color: #fff;
-            border: none; font-family: 'Oswald', sans-serif; font-size: 1.1rem;
-            cursor: pointer; transition: all 0.3s; margin-top: 10px;
+        input:focus {
+            border-color: var(--color-red);
+            background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 10px rgba(205, 32, 31, 0.1);
         }
-        .btn-main:hover { background: #ff4d4d; box-shadow: 0 0 15px rgba(205, 32, 31, 0.4); }
+        input::placeholder { color: #555; }
 
-        .btn-google {
-            width: 100%; padding: 12px; background: #fff; color: #000;
-            border: none; font-family: 'Oswald', sans-serif; font-size: 1rem;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-            margin-top: 1rem; transition: transform 0.2s;
+        /* Icons inside inputs */
+        .input-icon {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: #666; width: 16px; height: 16px; pointer-events: none; transition: color 0.3s;
         }
-        .btn-google:hover { transform: scale(1.02); }
+        input:focus + .input-icon { color: var(--color-red); }
 
-        /* UTILS */
-        .divider { text-align: center; margin: 1.5rem 0; color: #444; font-size: 0.8rem; position: relative; }
-        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: #333; }
-        .divider::before { left: 0; } .divider::after { right: 0; }
+        /* Password Toggle */
+        .toggle-password {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            color: #666; cursor: pointer; width: 18px; height: 18px;
+        }
+        .toggle-password:hover { color: #fff; }
 
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, var(--color-red-dim), var(--color-red));
+            border: 1px solid var(--color-red);
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover {
+            box-shadow: 0 0 20px rgba(205, 32, 31, 0.4);
+            transform: translateY(-2px);
+            background: var(--color-red);
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        
+        .btn-loading::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading { 100% { left: 150%; } }
+
+        /* --- Links & Switches --- */
+        .bottom-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: #888;
+        }
         .link-btn {
-            background: none; border: none; color: #666; cursor: pointer;
-            font-family: 'Special Elite', cursive; font-size: 0.8rem; margin-top: 10px;
-            text-decoration: underline; display: block; width: 100%; text-align: center;
+            color: #aaa; text-decoration: underline; cursor: pointer; transition: color 0.3s;
+            background: none; border: none; font: inherit; padding: 0;
         }
         .link-btn:hover { color: var(--color-red); }
 
-        .error-msg { color: var(--color-red); font-size: 0.9rem; text-align: center; margin-top: 10px; display: none; }
-        .success-msg { color: #00ff00; font-size: 0.9rem; text-align: center; margin-top: 10px; display: none; }
+        /* --- Feedback Messages --- */
+        #feedback {
+            min-height: 20px;
+            margin-bottom: 15px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .error { color: #ff4444; text-shadow: 0 0 5px rgba(255,0,0,0.2); }
+        .success { color: #00ff00; text-shadow: 0 0 5px rgba(0,255,0,0.2); }
 
-        /* HIDDEN SECTIONS */
-        .hidden { display: none; }
+        /* --- Transitions --- */
+        .form-view { display: none; opacity: 0; transition: opacity 0.4s ease; }
+        .form-view.active { display: block; opacity: 1; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .return-link {
+            position: absolute; top: 20px; left: 20px;
+            color: #666; font-family: var(--font-mono); font-size: 0.8rem;
+            text-decoration: none; z-index: 50; display: flex; align-items: center; gap: 5px;
+        }
+        .return-link:hover { color: #fff; }
+        
+        /* Mobile */
+        @media (max-width: 500px) {
+            .access-terminal { width: 90%; padding: 1.5rem; }
+            h1 { font-size: 1.7rem; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h1>IDENTITY VERIFICATION</h1>
-        <span class="sub-text">SECURE ARCHIVE ACCESS PROTOCOL</span>
+    <div class="noise"></div>
+    <div class="scanlines"></div>
+    
+    <a href="index.html" class="return-link">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        ABORT SEQUENCE
+    </a>
 
-        <div class="tabs">
-            <div class="tab active" id="tabLogin">LOGIN</div>
-            <div class="tab" id="tabRegister">REGISTER</div>
-        </div>
+    <div class="access-terminal">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
 
-        <form id="loginForm">
+        <h1 id="pageTitle">IDENTITY VERIFICATION</h1>
+        <div class="status-line" id="statusLine">SECURE CONNECTION ESTABLISHED</div>
+        
+        <div id="feedback"></div>
+
+        <form id="loginForm" class="form-view active">
             <div class="form-group">
-                <input type="email" id="loginEmail" placeholder="OPERATIVE EMAIL" required>
+                <input type="email" id="lEmail" placeholder="OPERATIVE ID (EMAIL)" required autocomplete="email">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
             </div>
+            
             <div class="form-group">
-                <input type="password" id="loginPass" placeholder="PASSWORD" required>
+                <input type="password" id="lPass" placeholder="PASSPHRASE" required autocomplete="current-password">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                <div class="toggle-password" onclick="togglePass('lPass', this)">👁</div>
             </div>
-            <button type="submit" class="btn-main" id="btnLogin">ACCESS SYSTEM</button>
-            <button type="button" class="link-btn" id="btnForgot">FORGOT PASSWORD?</button>
+
+            <button type="submit" class="btn" id="loginBtn">AUTHENTICATE</button>
+            
+            <div class="bottom-links">
+                <button type="button" class="link-btn" onclick="switchView('forgot')">LOST CREDENTIALS?</button>
+                <span style="margin: 0 10px; color: #333;">|</span>
+                <button type="button" class="link-btn" onclick="switchView('register')">REQUEST CLEARANCE</button>
+            </div>
         </form>
 
-        <form id="registerForm" class="hidden">
-            <p style="color:#aaa; font-size:0.8rem; text-align:center; margin-bottom:1rem;">
-                WARNING: EMAIL VERIFICATION REQUIRED.<br>FAKE CREDENTIALS WILL BE PURGED.
+        <form id="regForm" class="form-view">
+            <div class="form-group">
+                <input type="text" id="rName" placeholder="CODENAME (DISPLAY NAME)" required autocomplete="name">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            </div>
+            
+            <div class="form-group">
+                <input type="email" id="rEmail" placeholder="EMAIL ADDRESS" required autocomplete="email">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="rPass" placeholder="SET PASSPHRASE (MIN 6 CHARS)" required minlength="6" autocomplete="new-password">
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+
+            <button type="submit" class="btn" id="regBtn">INITIATE PROTOCOL</button>
+            
+            <div class="bottom-links">
+                ALREADY CLEARED? <button type="button" class="link-btn" onclick="switchView('login')">LOGIN</button>
+            </div>
+        </form>
+
+        <form id="forgotForm" class="form-view">
+            <p style="font-family: var(--font-mono); font-size: 0.9rem; margin-bottom: 1.5rem; text-align: center; color:#ccc;">
+                Enter your registered email. A recovery link will be transmitted via secure channel.
             </p>
+            
             <div class="form-group">
-                <input type="email" id="regEmail" placeholder="VALID EMAIL ADDRESS" required>
+                <input type="email" id="fEmail" placeholder="RECOVERY EMAIL" required>
+                <svg class="input-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
             </div>
-            <div class="form-group">
-                <input type="password" id="regPass" placeholder="CREATE PASSWORD (MIN 6 CHARS)" required minlength="6">
+
+            <button type="submit" class="btn" id="forgotBtn">TRANSMIT LINK</button>
+            
+            <div class="bottom-links">
+                <button type="button" class="link-btn" onclick="switchView('login')">RETURN TO LOGIN</button>
             </div>
-            <div class="form-group">
-                <input type="password" id="regPassConfirm" placeholder="CONFIRM PASSWORD" required>
-            </div>
-            <button type="submit" class="btn-main" id="btnRegister">INITIATE REGISTRATION</button>
         </form>
 
-        <form id="forgotForm" class="hidden">
-            <p style="color:#aaa; font-size:0.8rem; text-align:center; margin-bottom:1rem;">
-                ENTER EMAIL TO RECEIVE RECOVERY LINK.
-            </p>
-            <div class="form-group">
-                <input type="email" id="forgotEmail" placeholder="RECOVERY EMAIL ADDRESS" required>
-            </div>
-            <button type="submit" class="btn-main">SEND RESET LINK</button>
-            <button type="button" class="link-btn" id="btnBackToLogin">CANCEL</button>
-        </form>
-
-        <div id="socialSection">
-            <div class="divider">OR</div>
-            <button id="btnGoogle" class="btn-google">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.51 19.27 5 16.38 5 12c0-4.1 3.51-7.23 7.14-7.23c2.01 0 3.8.63 5.24 2.07l2.15-2.15C17.2 2.63 15.01 1.75 12.14 1.75c-5.53 0-10 4.7-10 10.5c0 5.79 4.47 10.5 10 10.5c5.07 0 9.42-3.69 9.87-9.61c.09-.94 0-1.57 0-2.04z"/></svg>
-                AUTHENTICATE WITH GOOGLE
-            </button>
-        </div>
-
-        <div id="statusMsg" class="error-msg"></div>
-        <div id="successMsg" class="success-msg"></div>
-
-        <a href="index.html" class="link-btn" style="margin-top: 2rem;">// ABORT & RETURN TO SITE</a>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            sendEmailVerification, 
-            sendPasswordResetEmail,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        const app = initializeApp({ apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY", projectId: "unnamed-things-website-70cf7", appId: "1:293788800527:web:575a1fd1f60d6361f3357a" });
+        const auth = getAuth(app);
+        
+        const feedback = document.getElementById('feedback');
+        const title = document.getElementById('pageTitle');
+        const status = document.getElementById('statusLine');
 
-        // YOUR CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY",
-            authDomain: "unnamed-things-website-70cf7.firebaseapp.com",
-            projectId: "unnamed-things-website-70cf7",
-            storageBucket: "unnamed-things-website-70cf7.firebasestorage.app",
-            messagingSenderId: "293788800527",
-            appId: "1:293788800527:web:575a1fd1f60d6361f3357a"
+        // --- UI Functions ---
+        window.togglePass = (id, el) => {
+            const input = document.getElementById(id);
+            if(input.type === "password") {
+                input.type = "text";
+                el.innerText = "🔒"; // Close eye representation
+            } else {
+                input.type = "password";
+                el.innerText = "👁"; // Open eye representation
+            }
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        // --- UI ELEMENTS ---
-        const tabLogin = document.getElementById('tabLogin');
-        const tabRegister = document.getElementById('tabRegister');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const forgotForm = document.getElementById('forgotForm');
-        const socialSection = document.getElementById('socialSection');
-        const statusMsg = document.getElementById('statusMsg');
-        const successMsg = document.getElementById('successMsg');
-
-        // --- UI SWITCHING LOGIC ---
-        function showMsg(msg, isError = true) {
-            statusMsg.style.display = isError ? 'block' : 'none';
-            successMsg.style.display = isError ? 'none' : 'block';
-            statusMsg.innerText = isError ? msg : '';
-            successMsg.innerText = isError ? '' : msg;
-        }
-
-        tabLogin.addEventListener('click', () => {
-            tabLogin.classList.add('active'); tabRegister.classList.remove('active');
-            loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); forgotForm.classList.add('hidden');
-            socialSection.classList.remove('hidden'); showMsg('', false);
-        });
-
-        tabRegister.addEventListener('click', () => {
-            tabRegister.classList.add('active'); tabLogin.classList.remove('active');
-            registerForm.classList.remove('hidden'); loginForm.classList.add('hidden'); forgotForm.classList.add('hidden');
-            socialSection.classList.remove('hidden'); showMsg('', false);
-        });
-
-        document.getElementById('btnForgot').addEventListener('click', () => {
-            loginForm.classList.add('hidden'); forgotForm.classList.remove('hidden'); socialSection.classList.add('hidden');
-        });
-
-        document.getElementById('btnBackToLogin').addEventListener('click', () => {
-            forgotForm.classList.add('hidden'); loginForm.classList.remove('hidden'); socialSection.classList.remove('hidden');
-        });
-
-        // --- 1. LOGIN LOGIC ---
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const pass = document.getElementById('loginPass').value;
-            const btn = document.getElementById('btnLogin');
-
-            btn.innerText = "VERIFYING CREDENTIALS...";
-            btn.disabled = true;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-
-                // CHECK IF EMAIL IS VERIFIED
-                if (user.emailVerified) {
-                    showMsg("ACCESS GRANTED.", false);
-                    setTimeout(() => window.history.back(), 1000); // Redirect back
-                } else {
-                    await signOut(auth); // Force logout
-                    showMsg("ACCESS DENIED: EMAIL NOT VERIFIED. CHECK YOUR INBOX.");
-                    btn.innerText = "ACCESS SYSTEM";
-                    btn.disabled = false;
-                }
-            } catch (error) {
-                showMsg("LOGIN FAILED: " + error.message.replace("Firebase:", "").trim());
-                btn.innerText = "ACCESS SYSTEM";
-                btn.disabled = false;
-            }
-        });
-
-        // --- 2. REGISTER LOGIC (With Verification) ---
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const confirm = document.getElementById('regPassConfirm').value;
-            const btn = document.getElementById('btnRegister');
-
-            if (pass !== confirm) { showMsg("ERROR: PASSWORDS DO NOT MATCH"); return; }
-
-            btn.innerText = "CREATING IDENTITY...";
-            btn.disabled = true;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-
-                // SEND VERIFICATION EMAIL
-                await sendEmailVerification(user);
-                
-                // Sign out immediately so they can't log in yet
-                await signOut(auth);
-
-                showMsg("REGISTRATION SUCCESSFUL. VERIFICATION LINK SENT TO EMAIL. PLEASE VERIFY BEFORE LOGGING IN.", false);
-                
-                // Reset UI
-                registerForm.reset();
-                btn.innerText = "INITIATE REGISTRATION";
-                btn.disabled = false;
-
-            } catch (error) {
-                showMsg("REGISTRATION ERROR: " + error.message.replace("Firebase:", "").trim());
-                btn.innerText = "INITIATE REGISTRATION";
-                btn.disabled = false;
-            }
-        });
-
-        // --- 3. FORGOT PASSWORD LOGIC ---
-        forgotForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('forgotEmail').value;
+        window.switchView = (view) => {
+            // Hide all forms
+            document.querySelectorAll('.form-view').forEach(el => el.classList.remove('active'));
+            feedback.style.opacity = '0';
             
-            try {
-                await sendPasswordResetEmail(auth, email);
-                showMsg("RECOVERY LINK SENT. CHECK INBOX.", false);
-                forgotForm.reset();
-            } catch (error) {
-                showMsg("ERROR: " + error.message);
+            // Show target form & update text
+            if(view === 'login') {
+                document.getElementById('loginForm').classList.add('active');
+                title.innerText = "IDENTITY VERIFICATION";
+                status.innerText = "SECURE CONNECTION ESTABLISHED";
+            } else if (view === 'register') {
+                document.getElementById('regForm').classList.add('active');
+                title.innerText = "NEW AGENT PROTOCOL";
+                status.innerText = "ENCRYPTING DATA STREAM...";
+            } else if (view === 'forgot') {
+                document.getElementById('forgotForm').classList.add('active');
+                title.innerText = "ACCESS RECOVERY";
+                status.innerText = "AWAITING USER INPUT";
             }
-        });
+        };
 
-        // --- 4. GOOGLE AUTH ---
-        document.getElementById('btnGoogle').addEventListener('click', () => {
-            signInWithPopup(auth, provider).then(() => {
-                showMsg("GOOGLE AUTH VERIFIED.", false);
-                setTimeout(() => window.history.back(), 1000);
-            }).catch((error) => {
-                showMsg("AUTH ERROR: " + error.message);
-            });
-        });
+        const showMsg = (msg, type) => {
+            feedback.innerText = msg;
+            feedback.className = type;
+            feedback.style.opacity = '1';
+        };
 
+        const setLoading = (btnId, isLoading) => {
+            const btn = document.getElementById(btnId);
+            if(isLoading) {
+                btn.classList.add('btn-loading');
+                btn.disabled = true;
+                btn.dataset.originalText = btn.innerText;
+                btn.innerText = "PROCESSING...";
+            } else {
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+                btn.innerText = btn.dataset.originalText || "SUBMIT";
+            }
+        };
+
+        // --- Auth Logic ---
+
+        // 1. Login
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading('loginBtn', true);
+            try {
+                const u = await signInWithEmailAndPassword(auth, document.getElementById('lEmail').value, document.getElementById('lPass').value);
+                
+                if(u.user.emailVerified) {
+                    showMsg("IDENTITY CONFIRMED. REDIRECTING...", "success");
+                    status.innerText = "ACCESS GRANTED";
+                    setTimeout(() => window.location.href = "index.html", 1500);
+                } else {
+                    showMsg("ERROR: EMAIL NOT VERIFIED. CHECK INBOX.", "error");
+                    await signOut(auth);
+                    setLoading('loginBtn', false);
+                }
+            } catch(err) {
+                console.error(err);
+                let msg = "ACCESS DENIED.";
+                if(err.code === 'auth/invalid-credential') msg = "INVALID CREDENTIALS.";
+                if(err.code === 'auth/too-many-requests') msg = "TOO MANY ATTEMPTS. TERMINAL LOCKED.";
+                showMsg(msg, "error");
+                setLoading('loginBtn', false);
+            }
+        };
+
+        // 2. Register
+        document.getElementById('regForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading('regBtn', true);
+            const email = document.getElementById('rEmail').value;
+            const pass = document.getElementById('rPass').value;
+            const name = document.getElementById('rName').value;
+
+            try {
+                const u = await createUserWithEmailAndPassword(auth, email, pass);
+                await updateProfile(u.user, { displayName: name });
+                await sendEmailVerification(u.user);
+                await signOut(auth);
+                
+                showMsg("CLEARANCE PENDING. VERIFICATION LINK SENT.", "success");
+                status.innerText = "AWAITING VERIFICATION";
+                document.getElementById('regForm').reset();
+                setTimeout(() => switchView('login'), 3000);
+            } catch(err) {
+                console.error(err);
+                let msg = "REGISTRATION FAILED.";
+                if(err.code === 'auth/email-already-in-use') msg = "ID ALREADY REGISTERED.";
+                if(err.code === 'auth/weak-password') msg = "PASSWORD STRENGTH INSUFFICIENT.";
+                showMsg(msg, "error");
+            } finally {
+                setLoading('regBtn', false);
+            }
+        };
+
+        // 3. Forgot Password
+        document.getElementById('forgotForm').onsubmit = async (e) => {
+            e.preventDefault();
+            setLoading('forgotBtn', true);
+            try {
+                await sendPasswordResetEmail(auth, document.getElementById('fEmail').value);
+                showMsg("RECOVERY LINK TRANSMITTED.", "success");
+                setTimeout(() => switchView('login'), 3000);
+            } catch(err) {
+                showMsg("TRANSMISSION FAILED. ID NOT FOUND.", "error");
+            } finally {
+                setLoading('forgotBtn', false);
+            }
+        };
     </script>
 </body>
 </html>
