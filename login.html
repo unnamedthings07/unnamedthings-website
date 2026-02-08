@@ -172,6 +172,35 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
             animation: loading 1.5s infinite;
         }
+
+        /* --- Google Button --- */
+        .divider {
+            display: flex; align-items: center; margin: 1.5rem 0; color: #555; font-size: 0.8rem; font-family: var(--font-mono);
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #333;
+        }
+        .divider span { padding: 0 10px; }
+
+        .btn-google {
+            width: 100%; padding: 12px;
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-google:hover {
+            border-color: #fff; color: #fff; background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+        .google-icon { width: 18px; height: 18px; fill: currentColor; }
+
         @keyframes loading { 100% { left: 150%; } }
 
         /* --- Links & Switches --- */
@@ -252,6 +281,14 @@
             </div>
 
             <button type="submit" class="btn" id="loginBtn">AUTHENTICATE</button>
+
+            <div class="divider"><span>OR AUTHENTICATE WITH</span></div>
+            <button type="button" class="btn-google" id="googleBtn">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                </svg>
+                Google Access
+            </button>
             
             <div class="bottom-links">
                 <button type="button" class="link-btn" onclick="switchView('forgot')">LOST CREDENTIALS?</button>
@@ -277,6 +314,14 @@
             </div>
 
             <button type="submit" class="btn" id="regBtn">INITIATE PROTOCOL</button>
+
+            <div class="divider"><span>OR</span></div>
+            <button type="button" class="btn-google" id="googleBtnReg">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+                </svg>
+                Google Access
+            </button>
             
             <div class="bottom-links">
                 ALREADY CLEARED? <button type="button" class="link-btn" onclick="switchView('login')">LOGIN</button>
@@ -304,10 +349,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         
         const app = initializeApp({ apiKey: "AIzaSyDwIMRuv26pcAndpd36EkLbUpSGvh6ptSY", projectId: "unnamed-things-website-70cf7", appId: "1:293788800527:web:575a1fd1f60d6361f3357a" });
         const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
         
         const feedback = document.getElementById('feedback');
         const title = document.getElementById('pageTitle');
@@ -318,19 +364,17 @@
             const input = document.getElementById(id);
             if(input.type === "password") {
                 input.type = "text";
-                el.innerText = "🔒"; // Close eye representation
+                el.innerText = "🔒";
             } else {
                 input.type = "password";
-                el.innerText = "👁"; // Open eye representation
+                el.innerText = "👁";
             }
         };
 
         window.switchView = (view) => {
-            // Hide all forms
             document.querySelectorAll('.form-view').forEach(el => el.classList.remove('active'));
             feedback.style.opacity = '0';
             
-            // Show target form & update text
             if(view === 'login') {
                 document.getElementById('loginForm').classList.add('active');
                 title.innerText = "IDENTITY VERIFICATION";
@@ -366,7 +410,28 @@
             }
         };
 
-        // --- Auth Logic ---
+        // --- Google Auth Handler ---
+        const handleGoogleLogin = async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                // Google auto-verifies emails, so we can skip verification check or allow it directly
+                showMsg("BIOMETRIC MATCH CONFIRMED. REDIRECTING...", "success");
+                status.innerText = "ACCESS GRANTED";
+                setTimeout(() => window.location.href = "index.html", 1500);
+            } catch (error) {
+                console.error(error);
+                let msg = "AUTHENTICATION ERROR.";
+                if (error.code === 'auth/popup-closed-by-user') msg = "CONNECTION ABORTED BY USER.";
+                if (error.code === 'auth/popup-blocked') msg = "POPUP BLOCKED. ENABLE OVERLAYS.";
+                showMsg(msg, "error");
+            }
+        };
+
+        // Attach Google listeners
+        document.getElementById('googleBtn').addEventListener('click', handleGoogleLogin);
+        document.getElementById('googleBtnReg').addEventListener('click', handleGoogleLogin);
+
+        // --- Email/Pass Auth Logic ---
 
         // 1. Login
         document.getElementById('loginForm').onsubmit = async (e) => {
