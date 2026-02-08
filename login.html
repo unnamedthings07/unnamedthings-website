@@ -414,15 +414,21 @@
         const handleGoogleLogin = async () => {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
-                // Google auto-verifies emails, so we can skip verification check or allow it directly
+                // Google auto-verifies emails
                 showMsg("BIOMETRIC MATCH CONFIRMED. REDIRECTING...", "success");
                 status.innerText = "ACCESS GRANTED";
                 setTimeout(() => window.location.href = "index.html", 1500);
             } catch (error) {
-                console.error(error);
-                let msg = "AUTHENTICATION ERROR.";
+                console.error("Auth Error:", error);
+                
+                let msg = "AUTHENTICATION ERROR: " + error.code;
+                
+                // Detailed error mapping
                 if (error.code === 'auth/popup-closed-by-user') msg = "CONNECTION ABORTED BY USER.";
                 if (error.code === 'auth/popup-blocked') msg = "POPUP BLOCKED. ENABLE OVERLAYS.";
+                if (error.code === 'auth/operation-not-allowed') msg = "GOOGLE LOGIN NOT ENABLED IN FIREBASE CONSOLE.";
+                if (error.code === 'auth/unauthorized-domain') msg = "DOMAIN NOT AUTHORIZED IN FIREBASE CONSOLE.";
+                
                 showMsg(msg, "error");
             }
         };
